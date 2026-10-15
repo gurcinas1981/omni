@@ -58,7 +58,7 @@ export default async function BriefPage({ searchParams }: { searchParams: Promis
         </div>
       </div>
 
-      <div className="grid g2" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr)' }}>
+      <div className="grid g2 split-16">
         <section className="card" aria-labelledby="brief-h">
           <h2 id="brief-h">Today’s brief</h2>
           <Markdown source={brief.markdown} />

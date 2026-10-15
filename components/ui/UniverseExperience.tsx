@@ -154,7 +154,7 @@ export default function UniverseExperience() {
   );
 
   return (
-    <div className="universe">
+    <div className={`universe ${node && node.id !== 'omnisynapse' ? 'focused' : ''}`}>
       {opener && (
         <OmniOpener
           onDone={() => {

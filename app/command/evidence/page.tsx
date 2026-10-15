@@ -36,7 +36,7 @@ export default async function EvidencePage() {
           <p>Dated, linked and classified sources. Only verified primary, credible secondary or internal verified evidence can promote a recommendation.</p>
         </div>
       </div>
-      <div className="grid g2" style={{ gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' }}>
+      <div className="grid g2 split-14">
         <section className="card">
           <h2>Ledger · {evidence.length} records</h2>
           <table className="table">

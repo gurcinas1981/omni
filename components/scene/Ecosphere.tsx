@@ -484,11 +484,12 @@ function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }
   const pendingCount = ideas.filter((i) => i.state === 'pending').length;
   const confirmedCount = ideas.filter((i) => i.state === 'confirmed').length;
 
-  useFrame(({ camera, clock }, dt) => {
+  useFrame(({ camera, clock, size }, dt) => {
     const s = getState();
     const selected = s.selected === node.id;
     const other = !!s.selected && !selected;
     const t = s.reducedMotion ? 0 : clock.elapsedTime;
+    const compact = Math.min(size.width, size.height) < 600;
     const ang = phase + anim.orbitT * orbit.speed;
     orbitPoint(orbit, ang, e);
     planPoint(orbit, ang, p);
@@ -518,7 +519,8 @@ function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }
     if (halo.current) halo.current.opacity = 0.32 * hot.current * dim.current;
     (ring.material as THREE.LineBasicMaterial).opacity = (0.16 + hot.current * 0.3) * (1 - anim.blend * 0.5) * (other ? 0.4 : 1);
     if (label.current) {
-      const vis = selected || hot.current > 0.5 || anim.blend > 0.5 ? 1 : THREE.MathUtils.smoothstep(depth, 0.4, 0.62);
+      // phones: names live in the bottom rail; only the selected / touched sphere carries a label in 3D
+      const vis = selected || hot.current > 0.5 ? 1 : compact ? 0 : anim.blend > 0.5 ? 1 : THREE.MathUtils.smoothstep(depth, 0.4, 0.62);
       label.current.style.opacity = String(vis * (other ? 0.3 : 1));
       label.current.style.pointerEvents = vis < 0.15 ? 'none' : '';
       label.current.classList.toggle('on', hot.current > 0.5);
@@ -690,15 +692,19 @@ function Rig({ controls }: { controls: React.RefObject<OrbitControlsImpl | null>
   const flying = useRef(true);
   const goal = useMemo(() => ({ pos: ECO_CAM.pos.clone(), target: ECO_CAM.target.clone() }), []);
   useEffect(() => {
-    const portrait = size.width < size.height;
-    const k = portrait ? ECO_CAM.portraitScale : 1;
+    const aspect = size.width / size.height;
+    const portrait = aspect < 1;
+    // pull back just enough for the aspect: tablets ~1.2×, phones up to portraitScale
+    const k = portrait ? THREE.MathUtils.clamp(0.85 / aspect, 1, ECO_CAM.portraitScale) : aspect < 1.25 ? 1.12 : 1;
+    const phone = Math.min(size.width, size.height) < 600;
     const plan = mode === 'plan';
     if (!selected) {
       goal.pos.copy(plan ? PLAN_CAM.pos : ECO_CAM.pos).multiplyScalar(k);
       goal.target.copy(plan ? PLAN_CAM.target : ECO_CAM.target);
     } else {
-      const dist = selected === 'omnisynapse' ? 15 : 12.5;
-      const shift = portrait ? new THREE.Vector3(0, -2.6, 0) : new THREE.Vector3(3.4, 0, 0);
+      const dist = (selected === 'omnisynapse' ? 15 : 12.5) * (portrait ? Math.min(k, phone ? 1.6 : 1.3) / k : 1);
+      // keep the subject clear of the info panel: above the bottom sheet on phones, left of the side panel elsewhere
+      const shift = portrait ? new THREE.Vector3(0, phone ? -4 : -3.4, 0) : phone ? new THREE.Vector3(4.6, -0.6, 0) : new THREE.Vector3(3.4, 0, 0);
       goal.target.set(0, 0, 0).add(shift);
       goal.pos.copy(plan ? new THREE.Vector3(0, dist * 1.6 * k, 0.01) : new THREE.Vector3(0, 2.4, dist * k)).add(shift);
     }
