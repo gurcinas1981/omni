@@ -215,3 +215,31 @@ a.btn, a.chip, a.cta { text-decoration: none; display: inline-flex; align-items:
 .inline-form > .row { margin-top: 0 !important; }
 .note-input { padding: 9px 10px; border-radius: 9px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.12); color: inherit; min-width: 220px; font: inherit; font-size: 13px; }
 .grid.g2 > .grid { align-content: start; }
+
+/* ───────── Opener (FOX ecosystem opening sequence, ORBIT grammar) ───────── */
+.opener { position: fixed; inset: 0; z-index: 100; background: #020605; overflow: hidden; transition: opacity .8s ease; }
+.opener.out { opacity: 0; pointer-events: none; }
+.opener canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.op-title { position: absolute; left: 0; right: 0; bottom: 13vh; text-align: center; pointer-events: none; padding: 0 16px; }
+.op-title .t1 { font: 300 clamp(24px, 4.4vw, 54px)/1 var(--sans); letter-spacing: .42em; padding-left: .42em; color: #f4dea6; opacity: 0; transform: translateY(10px); transition: opacity 1s, transform 1s, letter-spacing 2.2s, padding-left 2.2s; text-shadow: 0 0 30px rgba(244,222,166,.35); }
+.op-title .t2 { margin-top: 12px; font: 400 clamp(9px, 1.1vw, 11px) ui-monospace, 'Space Mono', Menlo, monospace; letter-spacing: .42em; color: #8fb5a6; opacity: 0; transition: opacity 1s .4s; }
+.op-title .t3 { margin-top: 10px; font: italic 500 clamp(15px, 1.6vw, 19px) var(--serif); color: #c9b98f; opacity: 0; transition: opacity 1s .9s; }
+.op-title.in .t1 { opacity: 1; transform: none; letter-spacing: .3em; padding-left: .3em; }
+.op-title.in .t2, .op-title.in .t3 { opacity: 1; }
+.op-skip { position: absolute; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); border: 1px solid #d9b87966; background: #0008; color: #f4dea6; border-radius: 20px; padding: 8px 14px; font: 400 10px ui-monospace, Menlo, monospace; letter-spacing: .16em; cursor: pointer; }
+.op-skip:hover { border-color: #d9b879; }
+.op-boot { position: absolute; left: 22px; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); font: 400 10px/1.7 ui-monospace, 'Space Mono', Menlo, monospace; color: #7fa898; letter-spacing: .08em; max-width: 46vw; }
+.op-boot div { animation: fadeup .4s ease both; }
+@media (max-width: 760px) { .op-boot { display: none; } .op-title { bottom: 16vh; } }
+
+.panel-head { display: flex; gap: 14px; align-items: center; margin: 6px 0 4px; }
+.panel-head h2 { margin: 0; }
+.panel-sym { width: 64px; height: 64px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); background: radial-gradient(circle, rgba(18,40,64,.9), rgba(6,14,26,.9)); box-shadow: 0 0 24px rgba(200,169,106,.18), inset 0 0 18px rgba(53,217,245,.12); }
+.panel-symname { margin: 4px 0 0; font-size: 11.5px; letter-spacing: .06em; color: var(--muted); }
+.rail-item .sym-icon { filter: drop-shadow(0 0 4px rgba(200,169,106,.35)); }
+.op-labels { position: absolute; inset: 0; pointer-events: none; }
+.op-labels span { position: absolute; left: 0; top: 0; opacity: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; white-space: nowrap;
+  padding: 4px 9px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); background: rgba(2,6,5,.62); backdrop-filter: blur(4px); will-change: transform, opacity; }
+.op-labels b { font: 600 10px ui-monospace, 'Space Mono', Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--c); }
+.op-labels small { font: italic 500 12px var(--serif); color: #c9b98f; }
+@media (max-width: 760px) { .op-labels small { display: none; } .op-labels b { font-size: 8.5px; } }

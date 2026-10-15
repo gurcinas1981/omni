@@ -1,6 +1,7 @@
 'use client';
 import * as THREE from 'three';
 import type { SceneNode } from '@/lib/registry/nodes';
+import { SYMBOL_ATLAS, SYMBOL_BY_ID } from '@/lib/registry/symbols';
 
 /**
  * Procedural, original artwork drawn on canvas — no third-party assets.
@@ -461,4 +462,65 @@ export function dotTexture() {
   g.fillRect(0, 0, 64, 64);
   const t = new THREE.CanvasTexture(c);
   return t;
+}
+
+/* ───────── OMNI Symbol Library medallion faces ───────── */
+let atlasImg: Promise<HTMLImageElement> | null = null;
+function loadAtlas() {
+  if (!atlasImg)
+    atlasImg = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = SYMBOL_ATLAS.src;
+    });
+  return atlasImg;
+}
+
+/** Dark glass disc with tick ring and the category's library symbol, tinted and glowing. */
+export function symbolDiscTexture(symbolId: string, tint: string) {
+  const s = 512;
+  const { c, g } = canvas(s, s);
+  const bg = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  bg.addColorStop(0, 'rgba(18,40,64,0.95)');
+  bg.addColorStop(0.75, 'rgba(6,14,26,0.95)');
+  bg.addColorStop(1, 'rgba(6,14,26,0)');
+  g.fillStyle = bg;
+  g.beginPath();
+  g.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = 'rgba(120,200,255,0.35)';
+  g.lineWidth = 2;
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * Math.PI * 2;
+    const r1 = s * 0.455;
+    const r2 = s * (i % 6 === 0 ? 0.425 : 0.44);
+    g.beginPath();
+    g.moveTo(s / 2 + Math.cos(a) * r1, s / 2 + Math.sin(a) * r1);
+    g.lineTo(s / 2 + Math.cos(a) * r2, s / 2 + Math.sin(a) * r2);
+    g.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const sym = SYMBOL_BY_ID[symbolId];
+  if (sym)
+    loadAtlas()
+      .then((img) => {
+        const cell = img.width / SYMBOL_ATLAS.cols;
+        const tmp = canvas(256, 256);
+        tmp.g.drawImage(img, sym.col * cell, sym.row * cell, cell, cell, 0, 0, 256, 256);
+        tmp.g.globalCompositeOperation = 'source-in';
+        tmp.g.fillStyle = tint;
+        tmp.g.fillRect(0, 0, 256, 256);
+        g.save();
+        g.shadowColor = tint;
+        g.shadowBlur = 22;
+        const d = s * 0.62;
+        g.drawImage(tmp.c, (s - d) / 2, (s - d) / 2, d, d);
+        g.restore();
+        tex.needsUpdate = true;
+      })
+      .catch(() => {});
+  return tex;
 }

@@ -13,6 +13,8 @@ export interface UniverseState {
   lowPower: boolean;
   /** 0 → 1 intro progress (read imperatively inside useFrame through `wake`). */
   introDone: boolean;
+  /** True while the full-screen opener plays; the temple intro waits for it. */
+  openerActive: boolean;
 }
 
 let state: UniverseState = {
@@ -22,6 +24,7 @@ let state: UniverseState = {
   reducedMotion: false,
   lowPower: false,
   introDone: false,
+  openerActive: false,
 };
 const listeners = new Set<() => void>();
 

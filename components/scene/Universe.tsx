@@ -20,6 +20,11 @@ function IntroDriver() {
       frame.wake = 1;
       return;
     }
+    if (s.openerActive) {
+      frame.wake = 0;
+      frame.introStart = -1;
+      return;
+    }
     if (frame.introStart < 0) frame.introStart = clock.elapsedTime;
     frame.wake = Math.min(1, (clock.elapsedTime - frame.introStart) / INTRO_SECONDS);
     if (frame.wake > 0.02 && s.phase === 'DORMANT') setState({ phase: 'AWAKENING' });

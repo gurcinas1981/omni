@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { OMEGA_PATH } from '@/lib/brand/omega';
+import { foxShards } from '@/lib/brand/fox';
 import { ALTAR_POS, BRAIN_CENTER, FLOOR_Y, FOX_POS } from './layout';
 import { getState, hoverNode, selectNode, stage, useUniforms } from './store';
 
@@ -79,46 +80,10 @@ export function OmegaEmblem() {
 }
 
 /* ───────────── FOX insignia — faceted gold mask, ecosystem gateway ───────────── */
-const FOX_TRIS: [number, number][][] = [
-  // ears (upper), pointing up and outward
-  [[-0.66, 0.72], [-0.07, 0.14], [-0.44, -0.04]],
-  [[0.66, 0.72], [0.07, 0.14], [0.44, -0.04]],
-  // cheeks converging to the snout
-  [[-0.44, -0.1], [-0.06, 0.06], [-0.03, -0.78]],
-  [[0.44, -0.1], [0.06, 0.06], [0.03, -0.78]],
-];
-
-function facetGeometry(tri: [number, number][], raise = 0.16, depth = 0.08) {
-  const [a, b, c] = tri.map(([x, y]) => new THREE.Vector3(x, y, 0));
-  const centroid = a.clone().add(b).add(c).divideScalar(3);
-  const apex = centroid.clone().setZ(raise);
-  const back = [a, b, c].map((p) => p.clone().setZ(-depth));
-  const verts: number[] = [];
-  const push = (...ps: THREE.Vector3[]) => ps.forEach((p) => verts.push(p.x, p.y, p.z));
-  // front facets (consistent CCW winding as seen from +z)
-  const ccw = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).z > 0;
-  const [p, q, r] = ccw ? [a, b, c] : [a, c, b];
-  push(p, q, apex, q, r, apex, r, p, apex);
-  // back
-  const [bp, bq, br] = ccw ? back : [back[0], back[2], back[1]];
-  push(bp, br, bq);
-  // sides
-  const ring = ccw ? [[a, back[0]], [b, back[1]], [c, back[2]]] : [[a, back[0]], [c, back[2]], [b, back[1]]];
-  for (let i = 0; i < 3; i++) {
-    const [f0, b0] = ring[i];
-    const [f1, b1] = ring[(i + 1) % 3];
-    push(f0, b0, f1, f1, b0, b1);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  g.computeVertexNormals(); // non-indexed → flat facets
-  return g;
-}
-
 export function FoxInsignia() {
   const ref = useRef<THREE.Group>(null);
   const mat = useMemo(goldMaterial, []);
-  const geos = useMemo(() => FOX_TRIS.map((t) => facetGeometry(t)), []);
+  const geos = useMemo(() => foxShards(), []);
   const { update, handlers } = useHover('fox');
   useFrame(({ clock }, dt) => {
     const h = update(dt);
@@ -127,7 +92,7 @@ export function FoxInsignia() {
     const s = getState();
     const bob = s.reducedMotion ? 0 : Math.sin(clock.elapsedTime * 0.9) * 0.06;
     ref.current.position.y = FOX_POS.y + bob + (1 - w) * -0.6;
-    ref.current.scale.setScalar(1.35 * Math.max(0.0001, w) * (1 + h * 0.05));
+    ref.current.scale.setScalar(0.72 * Math.max(0.0001, w) * (1 + h * 0.05));
     if (!s.reducedMotion) ref.current.rotation.y = Math.sin(clock.elapsedTime * 0.5) * 0.12;
     mat.emissiveIntensity = 0.2 + w * 0.3 + h * 0.9;
   });
@@ -137,7 +102,7 @@ export function FoxInsignia() {
         <mesh key={i} geometry={g} material={mat} {...handlers} castShadow />
       ))}
       <mesh {...handlers} position={[0, 0, 0]}>
-        <planeGeometry args={[1.5, 1.6]} />
+        <planeGeometry args={[2.2, 2.8]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
     </group>

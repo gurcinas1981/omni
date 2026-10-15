@@ -5,7 +5,7 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { NODES, type SceneNode } from '@/lib/registry/nodes';
 import { ASTROLABE_CENTER, ASTROLABE_RADIUS, BRAIN_CENTER, symbolPosition } from './layout';
 import { getState, hoverNode, selectNode, stage } from './store';
-import { motifTexture } from './textures';
+import { symbolDiscTexture } from './textures';
 
 const SYMBOLS = NODES.filter((n) => n.kind === 'symbol');
 
@@ -69,7 +69,7 @@ function Medallion({ node, index }: { node: SceneNode; index: number }) {
   const rimMat = useRef<THREE.MeshStandardMaterial>(null);
   const hover = useRef(0);
   const pos = useMemo(() => symbolPosition(node.angle ?? 0), [node.angle]);
-  const tex = useMemo(() => motifTexture(node.motif!), [node.motif]);
+  const tex = useMemo(() => symbolDiscTexture(node.symbol, node.side === 'left' ? '#f4dea6' : '#bfeeff'), [node.symbol, node.side]);
   const link = useMemo(() => {
     const local = BRAIN_CENTER.clone().sub(pos);
     const dir = local.clone().normalize();

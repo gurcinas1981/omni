@@ -55,6 +55,8 @@ export interface SceneNode {
   accent: string;
   motif?: 'meditator' | 'galaxy' | 'pyramid' | 'flower' | 'eye' | 'scarab' | 'mandala' | 'triangle';
   hotkey?: string;
+  /** The OMNI Symbol Library sign that represents this category (lib/registry/symbols.ts). */
+  symbol: string;
 }
 
 const deg = (d: number) => (d * Math.PI) / 180;
@@ -62,6 +64,7 @@ const deg = (d: number) => (d * Math.PI) / 180;
 export const NODES: SceneNode[] = [
   {
     id: 'omnisynapse',
+    symbol: 'omega',
     label: 'OMNISYNAPSE Ω',
     kind: 'core',
     domain: 'Central supervisory intelligence',
@@ -74,6 +77,7 @@ export const NODES: SceneNode[] = [
   },
   {
     id: 'fox',
+    symbol: 'fox',
     label: 'FOX Intelligence Ecosystem',
     kind: 'gateway',
     domain: 'Identity and the full FOX tool landscape',
@@ -84,50 +88,50 @@ export const NODES: SceneNode[] = [
     hotkey: 'f',
   },
   // Left hemisphere of the astrolabe — human, cosmic, built, geometric
-  { id: 'human-consciousness', label: 'Human Consciousness', kind: 'symbol', side: 'left', angle: deg(140), motif: 'meditator', accent: '#F7F6F1',
+  { id: 'human-consciousness', symbol: 'human-mind', label: 'Human Consciousness', kind: 'symbol', side: 'left', angle: deg(140), motif: 'meditator', accent: '#F7F6F1',
     domain: 'Human insight, intuition and the founder’s working context',
     description: 'The cognitive amplifier: working-context recall, “why did we decide that?”, scenario comparison and decision logs — augmenting judgement, never replacing it.',
     tools: ['OMNISYNAPSE'], command: { href: '/command/memory', label: 'Open working memory' } },
-  { id: 'galaxy', label: 'Cosmic Intelligence', kind: 'symbol', side: 'left', angle: deg(165), motif: 'galaxy', accent: '#9FD8FF',
+  { id: 'galaxy', symbol: 'galaxy', label: 'Cosmic Intelligence', kind: 'symbol', side: 'left', angle: deg(165), motif: 'galaxy', accent: '#9FD8FF',
     domain: 'Discovery, scale and emergent complexity',
     description: 'The ecosystem as a navigable universe. ORBIT maps every FOX system; OMNISYNAPSE reads its signals once a read-only adapter is authorised.',
     tools: ['ORBIT'], command: { href: '/command/systems', label: 'View ecosystem status' } },
-  { id: 'pyramid', label: 'Architecture & Creation', kind: 'symbol', side: 'left', angle: deg(192), motif: 'pyramid', accent: '#E9C98A',
+  { id: 'pyramid', symbol: 'step-pyramid', label: 'Architecture & Creation', kind: 'symbol', side: 'left', angle: deg(192), motif: 'pyramid', accent: '#E9C98A',
     domain: 'Architecture, construction and the built environment',
     description: 'From land to building: persistent site identity and digital twins that update when policy, site or scenario changes.',
     tools: ['LAND_PASSPORT', 'FOX_ATLAS'] },
-  { id: 'sacred-geometry', label: 'Geometry & Geospatial', kind: 'symbol', side: 'left', angle: deg(218), motif: 'flower', accent: '#BFE9F5',
+  { id: 'sacred-geometry', symbol: 'sacred-geometry', label: 'Geometry & Geospatial', kind: 'symbol', side: 'left', angle: deg(218), motif: 'flower', accent: '#BFE9F5',
     domain: 'Spatial mathematics, topology and pattern logic',
     description: 'Geospatial intelligence in British National Grid (EPSG:27700) — constraints, coverage, provenance and uncertainty behind every site output.',
     tools: ['LAND_IQ'] },
   // Right hemisphere — perception, renewal, logic, synthesis
-  { id: 'eye', label: 'Observation & Awareness', kind: 'symbol', side: 'right', angle: deg(40), motif: 'eye', accent: '#C8A96A',
+  { id: 'eye', symbol: 'eye-of-horus', label: 'Observation & Awareness', kind: 'symbol', side: 'right', angle: deg(40), motif: 'eye', accent: '#C8A96A',
     domain: 'Monitoring, perception and change detection',
     description: 'Observed telemetry only — ORBIT health, deployments, spend and failures. Missing events are never reported as “all systems healthy”.',
     tools: ['OBSERVATORY', 'PLANNING_RADAR'], command: { href: '/command/systems', label: 'Open observatory' } },
-  { id: 'scarab', label: 'Evolution & Transformation', kind: 'symbol', side: 'right', angle: deg(15), motif: 'scarab', accent: '#D9B36C',
+  { id: 'scarab', symbol: 'scarab', label: 'Evolution & Transformation', kind: 'symbol', side: 'right', angle: deg(15), motif: 'scarab', accent: '#D9B36C',
     domain: 'Renewal, learning loops and workflow improvement',
     description: 'Evolution controller: self-improvement is proposed, tested, approved and reversible — dispatched only through NEXUS under explicit human authority.',
     tools: ['NEXUS'], command: { href: '/command/approvals', label: 'Open approval queue' } },
-  { id: 'logic-mandala', label: 'Structured Logic', kind: 'symbol', side: 'right', angle: deg(-12), motif: 'mandala', accent: '#E3C27E',
+  { id: 'logic-mandala', symbol: 'tech-matrix', label: 'Structured Logic', kind: 'symbol', side: 'right', angle: deg(-12), motif: 'mandala', accent: '#E3C27E',
     domain: 'Logic, classification and analytical workflows',
     description: 'Evidence classes, transparent 0–5 scoring and typed connectome edges (SUPPORTS, CONTRADICTS, DEPENDS_ON…) keep reasoning inspectable.',
     tools: ['LAND_SEARCH'], command: { href: '/command/evidence', label: 'Open evidence ledger' } },
-  { id: 'synthesis', label: 'Synthesis & Decision', kind: 'symbol', side: 'right', angle: deg(-38), motif: 'triangle', accent: '#B99CFF',
+  { id: 'synthesis', symbol: 'triangle', label: 'Synthesis & Decision', kind: 'symbol', side: 'right', angle: deg(-38), motif: 'triangle', accent: '#B99CFF',
     domain: 'Decision support and synthesised intelligence',
     description: 'The daily brief: three ranked FOX upgrades, one emerging niche, one risk and one explicit founder decision — sourced, or not shown at all.',
     tools: ['LAND_IQ', 'OMNISYNAPSE'], command: { href: '/command', label: 'Open today’s brief' } },
   // Guardians
-  { id: 'guardian-security', label: 'Security & Permissions', kind: 'guardian', side: 'left', accent: '#C8A96A',
+  { id: 'guardian-security', symbol: 'anubis', label: 'Security & Permissions', kind: 'guardian', side: 'left', accent: '#C8A96A',
     domain: 'Authentication, authorisation and privilege boundaries',
     description: 'Owner-only access enforced in the database (row-level security), not just the interface. Risk tiers R0–R4; R3 needs a recorded human approval per action; R4 is unavailable.',
     tools: ['NEXUS'], command: { href: '/command/governance', label: 'Open governance' } },
-  { id: 'guardian-integrity', label: 'Integrity & Audit', kind: 'guardian', side: 'right', accent: '#C8A96A',
+  { id: 'guardian-integrity', symbol: 'hieroglyphic-code', label: 'Integrity & Audit', kind: 'guardian', side: 'right', accent: '#C8A96A',
     domain: 'Provenance, validation and audit trail',
     description: 'Every ingest, transition and decision writes to an append-only audit ledger. Sources must be dated, linked and classified.',
     tools: ['OBSERVATORY'], command: { href: '/command/audit', label: 'Open audit ledger' } },
   // Altar
-  { id: 'altar', label: 'Intelligence Cycle', kind: 'altar', accent: '#35D9F5',
+  { id: 'altar', symbol: 'energy-platform', label: 'Intelligence Cycle', kind: 'altar', accent: '#35D9F5',
     domain: 'Discover · Analyse · Challenge · Synthesise · Recommend · Learn',
     description: 'The six-stage cycle every council discipline follows. Signal-driven: light checks daily, deep specialist work only when something material changes.',
     tools: ['OMNISYNAPSE'], command: { href: '/command/council', label: 'Open expert council' } },

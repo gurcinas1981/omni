@@ -5,8 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FOX_TOOLS, INTELLIGENCE_CYCLE, NODES, NODE_BY_ID, type FoxTool } from '@/lib/registry/nodes';
 import { getState, selectNode, setState, skipIntro, useUniverse, hoverNode } from '@/components/scene/store';
 import { FoxMark, OmegaMark } from './Marks';
+import { shouldPlayOpener } from './openerGate';
+import SymbolIcon from './SymbolIcon';
+import { SYMBOL_BY_ID } from '@/lib/registry/symbols';
 
 const Universe = dynamic(() => import('@/components/scene/Universe'), { ssr: false });
+const OmniOpener = dynamic(() => import('./OmniOpener'), { ssr: false });
 
 function hasWebGL() {
   try {
@@ -52,6 +56,7 @@ function ToolRow({ tool }: { tool: FoxTool }) {
 
 export default function UniverseExperience() {
   const [webgl, setWebgl] = useState<boolean | null>(null);
+  const [opener, setOpener] = useState(false);
   const selected = useUniverse((s) => s.selected);
   const hovered = useUniverse((s) => s.hovered);
   const introDone = useUniverse((s) => s.introDone);
@@ -62,6 +67,10 @@ export default function UniverseExperience() {
 
   useEffect(() => {
     setWebgl(hasWebGL());
+    if (shouldPlayOpener()) {
+      setOpener(true);
+      setState({ openerActive: true });
+    }
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     let stored: string | null = null;
     try {
@@ -142,6 +151,14 @@ export default function UniverseExperience() {
 
   return (
     <div className="universe">
+      {opener && (
+        <OmniOpener
+          onDone={() => {
+            setOpener(false);
+            setState({ openerActive: false });
+          }}
+        />
+      )}
       <div className="stage" aria-hidden={webgl === false}>
         {webgl === true && <Universe />}
         {webgl === false && (
@@ -167,6 +184,16 @@ export default function UniverseExperience() {
           <button className="chip" onClick={toggleMotion} aria-pressed={reducedMotion} title="Reduce motion (M)">
             {reducedMotion ? 'Motion: reduced' : 'Motion: full'}
           </button>
+          <button
+            className="chip hide-sm"
+            onClick={() => {
+              setOpener(true);
+              setState({ openerActive: true });
+            }}
+            title="Replay the opening sequence"
+          >
+            Replay opener
+          </button>
           <button className="chip hide-sm" onClick={toggleFullscreen} title="Fullscreen">
             Fullscreen
           </button>
@@ -177,7 +204,7 @@ export default function UniverseExperience() {
       </header>
 
       {/* Intro title + skip */}
-      {!introDone && (
+      {!introDone && !opener && (
         <div className="intro" role="status">
           <p className="intro-motto">One Mind. Infinite Connections. Continuous Evolution.</p>
           <button className="chip" onClick={skipIntro}>
@@ -214,7 +241,7 @@ export default function UniverseExperience() {
                     onFocus={() => hoverNode(n.id)}
                     onBlur={() => hoverNode(null)}
                   >
-                    <span className="dot" style={{ background: n.accent }} />
+                    <SymbolIcon id={n.symbol} size={18} color={n.accent} />
                     {n.label}
                   </button>
                 </li>
@@ -239,7 +266,17 @@ export default function UniverseExperience() {
             ×
           </button>
           <p className="panel-kicker">{node.kind === 'symbol' ? `${node.side === 'left' ? 'Human' : 'Synthetic'} domain` : node.kind}</p>
-          <h2 id="panel-title">{node.label}</h2>
+          <div className="panel-head">
+            <span className="panel-sym">
+              <SymbolIcon id={node.symbol} size={46} color={node.accent} />
+            </span>
+            <div>
+              <h2 id="panel-title">{node.label}</h2>
+              <p className="panel-symname">
+                Symbol · {SYMBOL_BY_ID[node.symbol]?.name} — {SYMBOL_BY_ID[node.symbol]?.meaning.toLowerCase()}
+              </p>
+            </div>
+          </div>
           <p className="panel-domain">{node.domain}</p>
           <p className="panel-desc">{node.description}</p>
           {node.kind === 'altar' && (
