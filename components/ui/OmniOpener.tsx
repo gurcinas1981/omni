@@ -54,6 +54,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
   const [titleIn, setTitleIn] = useState(false);
   const [boot, setBoot] = useState<string[]>([]);
   const [leaving, setLeaving] = useState(false);
+  const [ready, setReady] = useState(false);
   const doneRef = useRef(false);
   const finishRef = useRef<() => void>(() => {});
   const labelsRef = useRef<HTMLDivElement>(null);
@@ -77,7 +78,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
 
     if (reduced || !canvasRef.current) {
       setTitleIn(true);
-      const t = setTimeout(finish, 1600);
+      const t = setTimeout(() => setReady(true), 1200);
       return () => {
         clearTimeout(t);
         clearInterval(bootTimer);
@@ -89,14 +90,14 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
     } catch {
       setTitleIn(true);
-      const t = setTimeout(finish, 1600);
-      return () => clearTimeout(t);
+      setReady(true);
+      return () => clearInterval(bootTimer);
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020605);
-    scene.fog = new THREE.Fog(0x020605, 36, 120);
+    scene.background = new THREE.Color(0x050d22);
+    scene.fog = new THREE.Fog(0x050d22, 36, 120);
     const cam = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
     cam.position.set(0, 0, 9);
     let portrait = false;
@@ -351,10 +352,8 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       cam.position.set(Math.sin(t * 0.18) * 0.8 * (1 - pull), 0.4 + pull * (end.y - 0.4), z0 + pull * (end.z - z0));
       cam.lookAt(0, pull * ECO_CAM.target.y, 0);
       renderer.render(scene, cam);
-      if (freezeAt === null && t > DURATION) {
-        finish();
-        return;
-      }
+      // the sequence holds on the live ecosphere frame until the visitor chooses to enter
+      if (t > DURATION - 2.6) setReady(true);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -409,8 +408,10 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
           <div key={i}>{l}</div>
         ))}
       </div>
-      <button className="op-skip" onClick={() => finishRef.current()}>
-        SKIP ⟶
+      <button className={`op-enter ${ready ? 'in' : ''}`} onClick={() => finishRef.current()} autoFocus>
+        <span className="ring" aria-hidden />
+        ENTER
+        <small>Press Enter</small>
       </button>
     </div>
   );

@@ -69,9 +69,24 @@ export default function UniverseExperience() {
   const panelRef = useRef<HTMLDivElement>(null);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const ideas = useIdeas();
+  const theme = useUniverse((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+  const toggleTheme = () => {
+    const next = getState().theme === 'dark' ? 'light' : 'dark';
+    setState({ theme: next });
+    try {
+      localStorage.setItem('omni-theme', next);
+    } catch {}
+  };
 
   useEffect(() => {
     setWebgl(hasWebGL());
+    try {
+      const qt = new URLSearchParams(window.location.search).get('theme') ?? localStorage.getItem('omni-theme');
+      if (qt === 'light' || qt === 'dark') setState({ theme: qt });
+    } catch {}
     try {
       const qv = new URLSearchParams(window.location.search).get('view');
       if (qv === 'plan' || qv === 'ecosphere') setState({ viewMode: qv });
@@ -119,6 +134,7 @@ export default function UniverseExperience() {
       else if (e.key === 'ArrowRight' || e.key === ']') cycle(1);
       else if (e.key === 'ArrowLeft' || e.key === '[') cycle(-1);
       else if (e.key === 'm' || e.key === 'M') toggleMotion();
+      else if (e.key === 't' || e.key === 'T') toggleTheme();
       else if (e.key === ' ' && !getState().introDone) {
         e.preventDefault();
         skipIntro();
@@ -191,18 +207,9 @@ export default function UniverseExperience() {
           <button className="chip" onClick={() => selectNode(null)} title="Reset view (R)">
             Reset
           </button>
-          <button className="chip" onClick={toggleMotion} aria-pressed={reducedMotion} title="Reduce motion (M)">
-            {reducedMotion ? 'Motion: reduced' : 'Motion: full'}
-          </button>
-          <button
-            className="chip hide-sm"
-            onClick={() => {
-              setOpener(true);
-              setState({ openerActive: true });
-            }}
-            title="Replay the opening sequence"
-          >
-            Replay opener
+          <button className="chip theme-chip" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title="Theme (T)">
+            <span className={theme === 'dark' ? 'on' : ''}>Dark</span>
+            <span className={theme === 'light' ? 'on' : ''}>Light</span>
           </button>
           <button className="chip hide-sm" onClick={toggleFullscreen} title="Fullscreen">
             Fullscreen
@@ -285,9 +292,17 @@ export default function UniverseExperience() {
       {/* Info panel */}
       {node && (
         <aside className="panel" ref={panelRef} tabIndex={-1} aria-labelledby="panel-title">
-          <button className="panel-close" onClick={() => selectNode(null)} aria-label="Close panel (Escape)">
-            ×
-          </button>
+          <div className="panel-top">
+            <button className="panel-arrow" onClick={() => cycle(-1)} aria-label="Previous sphere (←)">
+              ←<span>Prev</span>
+            </button>
+            <button className="panel-arrow" onClick={() => cycle(1)} aria-label="Next sphere (→)">
+              <span>Next</span>→
+            </button>
+            <button className="panel-close" onClick={() => selectNode(null)} aria-label="Close panel (Escape)">
+              ×
+            </button>
+          </div>
           <p className="panel-kicker">{node.kind === 'symbol' ? `${node.side === 'left' ? 'Human' : 'Synthetic'} domain` : node.kind}</p>
           <div className="panel-head">
             <span className="panel-sym">
@@ -346,14 +361,6 @@ export default function UniverseExperience() {
               <ToolRow key={t} tool={FOX_TOOLS[t]} />
             ))}
           </ul>
-          <div className="panel-nav">
-            <button className="chip" onClick={() => cycle(-1)}>
-              ← Previous
-            </button>
-            <button className="chip" onClick={() => cycle(1)}>
-              Next →
-            </button>
-          </div>
         </aside>
       )}
 
@@ -362,7 +369,7 @@ export default function UniverseExperience() {
           <i className="led led-off" /> Live integrations: none verified · ORBIT &amp; NEXUS unconnected
         </span>
         <span className="hide-sm">
-          {lowPower ? 'Low-power rendering' : 'Full rendering'} · ← → browse · R reset · M motion · Esc close
+          {lowPower ? 'Low-power rendering' : 'Full rendering'} · ← → browse · R reset · T theme · Esc close
         </span>
       </footer>
     </div>

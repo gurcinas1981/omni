@@ -76,82 +76,67 @@ function glowTex() {
   g.fillRect(0, 0, 128, 128);
   return (_glow = tex(c));
 }
-/** Draw one library symbol (white-on-transparent) tinted onto a context. */
-function stampSymbol(g: CanvasRenderingContext2D, img: HTMLImageElement, sym: OmniSymbol, x: number, y: number, size: number, tint: string) {
-  const cell = img.width / SYMBOL_ATLAS.cols;
-  const t = canvas(256);
-  t.g.drawImage(img, sym.col * cell, sym.row * cell, cell, cell, 0, 0, 256, 256);
-  t.g.globalCompositeOperation = 'source-in';
-  t.g.fillStyle = tint;
-  t.g.fillRect(0, 0, 256, 256);
-  g.drawImage(t.c, x - size / 2, y - size / 2, size, size);
-}
-/** Equirectangular planet surface: banded noise in the family colour with the category symbol on both faces. */
-function planetTextures(img: HTMLImageElement, sym: OmniSymbol, base: string, tint: string, seed: number) {
-  const W = 1024;
-  const H = 512;
-  const { c, g } = canvas(W, H);
-  const e = canvas(W, H);
-  const grd = g.createLinearGradient(0, 0, 0, H);
-  grd.addColorStop(0, '#05080f');
-  grd.addColorStop(0.5, base);
-  grd.addColorStop(1, '#05080f');
-  g.fillStyle = grd;
-  g.fillRect(0, 0, W, H);
-  let s = seed * 9973 + 7;
-  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  // atmospheric bands
-  for (let i = 0; i < 46; i++) {
-    const y = rnd() * H;
-    const h = 2 + rnd() * 18;
-    g.globalAlpha = 0.05 + rnd() * 0.16;
-    g.fillStyle = rnd() > 0.5 ? tint : '#000';
-    g.beginPath();
-    g.moveTo(0, y);
-    for (let x = 0; x <= W; x += 32) g.lineTo(x, y + Math.sin(x / (60 + rnd() * 80) + i) * 4);
-    g.lineTo(W, y + h);
-    g.lineTo(0, y + h);
-    g.fill();
-  }
-  // speckle / city-light style specks
-  g.globalAlpha = 1;
-  for (let i = 0; i < 900; i++) {
-    g.fillStyle = `rgba(255,255,255,${rnd() * 0.18})`;
-    g.fillRect(rnd() * W, H * 0.12 + rnd() * H * 0.76, 1.5, 1.5);
-  }
-  // fine latitude graticule
-  g.strokeStyle = 'rgba(255,255,255,.07)';
-  g.lineWidth = 1;
-  for (let y = H / 12; y < H; y += H / 12) {
-    g.beginPath();
-    g.moveTo(0, y);
-    g.lineTo(W, y);
-    g.stroke();
-  }
-  // the category symbol on both hemispheres (front/back) — reads as the globe turns
-  for (const x of [W * 0.25, W * 0.75]) {
-    stampSymbol(g, img, sym, x, H / 2, H * 0.62, tint);
-    stampSymbol(e.g, img, sym, x, H / 2, H * 0.62, tint);
-  }
-  return { map: tex(c), emissive: tex(e.c) };
+/** Theme palettes — Dark (navy) and Light (silver). Light inverts luminous elements into ink tones. */
+export const PALETTES = {
+  dark: {
+    sky: ['#020817', '#0c2148'] as const,
+    clear: '#030a1d',
+    lanes: ['#f4dea6', '#8fe9ff', '#d9c3ff'] as const,
+    line: '#a9bfe0',
+    lineOp: 0.2,
+    glyph: ['#ffffff', '#d5dce6', '#b9c4d3'] as const,
+    glyphOp: 0.26,
+    swarmOp: 0.55,
+    dot: '#cfdcf0',
+    flyer: '#d3dae4',
+    core: { wire: 0xd9b879, node: '#f4dea6', glow: '#ffd28a' },
+    additive: true,
+    bloom: true,
+  },
+  light: {
+    sky: ['#c4ccd8', '#f7f8fa'] as const,
+    clear: '#e3e7ed',
+    lanes: ['#8a6420', '#14687f', '#5b3c9c'] as const,
+    line: '#3b4960',
+    lineOp: 0.26,
+    glyph: ['#2a3343', '#4b5668', '#6a7586'] as const,
+    glyphOp: 0.22,
+    swarmOp: 0.5,
+    dot: '#34425a',
+    flyer: '#4c586b',
+    core: { wire: 0x9a7432, node: '#8a6420', glow: '#e8c98a' },
+    additive: false,
+    bloom: false,
+  },
+};
+export type Palette = (typeof PALETTES)['dark'] | (typeof PALETTES)['light'];
+const blendFor = (P: Palette) => (P.additive ? THREE.AdditiveBlending : THREE.NormalBlending);
+
+/** A texture window onto one cell of the symbol atlas. */
+function symbolTex(atlas: THREE.Texture, sym: OmniSymbol) {
+  const t = atlas.clone();
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.repeat.set(1 / SYMBOL_ATLAS.cols, 1 / SYMBOL_ATLAS.rows);
+  t.offset.set(sym.col / SYMBOL_ATLAS.cols, 1 - (sym.row + 1) / SYMBOL_ATLAS.rows);
+  t.needsUpdate = true;
+  return t;
 }
 
 /* ───────────── background: deep navy space ───────────── */
-function Sky() {
+function Sky({ P }: { P: Palette }) {
+  const uniforms = useMemo(() => ({ uDeep: { value: new THREE.Color(P.sky[0]) }, uNavy: { value: new THREE.Color(P.sky[1]) } }), [P]);
   return (
     <mesh scale={240}>
       <sphereGeometry args={[1, 48, 24]} />
       <shaderMaterial
         side={THREE.BackSide}
         depthWrite={false}
+        uniforms={uniforms}
         vertexShader={/* glsl */ `varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `}
-        fragmentShader={/* glsl */ `varying vec3 vP;
+        fragmentShader={/* glsl */ `varying vec3 vP; uniform vec3 uDeep; uniform vec3 uNavy;
           void main(){
-            float h = vP.y;
-            vec3 deep = vec3(0.012,0.026,0.06);
-            vec3 navy = vec3(0.035,0.075,0.16);
-            float glow = pow(max(0.0, 1.0 - length(vP.xy - vec2(0.0,0.05))), 3.0);
-            vec3 c = mix(deep, navy, glow*0.9 + 0.15*(1.0-abs(h)));
+            float glow = pow(max(0.0, 1.0 - length(vP.xy - vec2(0.0,0.05))), 2.4);
+            vec3 c = mix(uDeep, uNavy, clamp(glow*0.95 + 0.12*(1.0-abs(vP.y)), 0.0, 1.0));
             gl_FragColor = vec4(c,1.0);
           }`}
       />
@@ -226,8 +211,9 @@ interface GlyphCloudProps {
   size: [number, number];
   /** 'ambient' drifts around the world origin; 'swarm' orbits the focus point and fades with focus. */
   mode: 'ambient' | 'swarm';
+  P: Palette;
 }
-function GlyphCloud({ count, rMin, rMax, speed, size, mode }: GlyphCloudProps) {
+function GlyphCloud({ count, rMin, rMax, speed, size, mode, P }: GlyphCloudProps) {
   const atlas = useGlyphAtlas();
   const mat = useRef<THREE.ShaderMaterial>(null);
   const geo = useMemo(() => {
@@ -239,7 +225,7 @@ function GlyphCloud({ count, rMin, rMax, speed, size, mode }: GlyphCloudProps) {
     const orbit = new Float32Array(count * 4); // r, incl, node, speed
     const misc = new Float32Array(count * 4); // cell, phase, size, seed
     const tint = new Float32Array(count * 3);
-    const palette = [new THREE.Color('#f4dea6'), new THREE.Color('#8fe9ff'), new THREE.Color('#d9c3ff'), new THREE.Color('#7fe0b8'), new THREE.Color('#cfe0ff')];
+    const palette = P.glyph.map((c) => new THREE.Color(c));
     for (let i = 0; i < count; i++) {
       const glyphHeavy = Math.random() < 0.62;
       const cell = glyphHeavy ? 32 + Math.floor(Math.random() * 28) : Math.floor(Math.random() * 32);
@@ -253,16 +239,16 @@ function GlyphCloud({ count, rMin, rMax, speed, size, mode }: GlyphCloudProps) {
     g.setAttribute('aTint', new THREE.InstancedBufferAttribute(tint, 3));
     g.instanceCount = count;
     return g;
-  }, [count, rMin, rMax, speed, size]);
+  }, [count, rMin, rMax, speed, size, P]);
   const uniforms = useMemo(
-    () => ({ uTime: { value: 0 }, uAtlas: { value: atlas }, uCenter: { value: new THREE.Vector3() }, uOpacity: { value: mode === 'ambient' ? 1 : 0 }, uGrid: { value: GLYPH_GRID } }),
-    [atlas, mode],
+    () => ({ uTime: { value: 0 }, uAtlas: { value: atlas }, uCenter: { value: new THREE.Vector3() }, uOpacity: { value: mode === 'ambient' ? P.glyphOp : 0 }, uGrid: { value: GLYPH_GRID } }),
+    [atlas, mode, P],
   );
   useFrame(({ clock }) => {
     const u = mat.current?.uniforms;
     if (!u) return;
     u.uTime.value = getState().reducedMotion ? 0 : clock.elapsedTime;
-    if (mode === 'swarm') u.uOpacity.value = anim.focus;
+    if (mode === 'swarm') u.uOpacity.value = anim.focus * P.swarmOp;
   });
   return (
     <mesh geometry={geo} frustumCulled={false} renderOrder={mode === 'swarm' ? 5 : -1}>
@@ -271,7 +257,7 @@ function GlyphCloud({ count, rMin, rMax, speed, size, mode }: GlyphCloudProps) {
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={blendFor(P)}
         vertexShader={/* glsl */ `
           attribute vec4 aOrbit; attribute vec4 aMisc; attribute vec3 aTint;
           uniform float uTime; uniform vec3 uCenter; uniform float uGrid;
@@ -296,7 +282,7 @@ function GlyphCloud({ count, rMin, rMax, speed, size, mode }: GlyphCloudProps) {
             vec2 uv = vec2((col + vUv.x) / uGrid, 1.0 - (row + 1.0 - vUv.y) / uGrid);
             float a = texture2D(uAtlas, uv).a;
             if (a < 0.02) discard;
-            gl_FragColor = vec4(vTint * 1.15, a * vTw * uOpacity);
+            gl_FragColor = vec4(vTint, a * vTw * uOpacity);
           }`}
       />
     </mesh>
@@ -314,7 +300,7 @@ function useFocusLerp() {
 }
 
 /* ───────────── centre: Ω inside the gold wire globe ───────────── */
-function OmegaCore() {
+function OmegaCore({ P }: { P: Palette }) {
   const root = useRef<THREE.Group>(null);
   const omega = useRef<THREE.Mesh>(null);
   const wire = useRef<THREE.Group>(null);
@@ -378,14 +364,14 @@ function OmegaCore() {
     <group ref={root} name="eco-omnisynapse">
       <group ref={wire}>
         <lineSegments geometry={wireGeo}>
-          <lineBasicMaterial color={0xd9b879} transparent opacity={0.36} />
+          <lineBasicMaterial color={P.core.wire} transparent opacity={P.additive ? 0.36 : 0.5} />
         </lineSegments>
         <points geometry={nodes}>
-          <pointsMaterial size={0.09} color={0xf4dea6} map={dotTex()} transparent opacity={0.8} depthWrite={false} />
+          <pointsMaterial size={0.09} color={P.core.node} map={dotTex()} transparent opacity={0.8} depthWrite={false} />
         </points>
       </group>
       <sprite scale={8.5}>
-        <spriteMaterial map={glowTex()} color={'#ffd28a'} transparent opacity={0.4} depthWrite={false} blending={THREE.AdditiveBlending} />
+        <spriteMaterial map={glowTex()} color={P.core.glow} transparent opacity={P.additive ? 0.4 : 0.55} depthWrite={false} blending={blendFor(P)} />
       </sprite>
       <pointLight color={0xffd690} intensity={3} decay={0} />
       <mesh ref={omega} geometry={omegaGeo} material={omegaMat} />
@@ -400,7 +386,7 @@ function OmegaCore() {
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
       <Html position={[0, -2.7, 0]} center zIndexRange={[3, 0]}>
-        <button className="plabel core" style={{ ['--c' as string]: '#d9b879' }} onClick={() => selectNode('omnisynapse')}>
+        <button className="plabel core" style={{ ['--c' as string]: P.lanes[0] }} onClick={() => selectNode('omnisynapse')}>
           <b>OMNISYNAPSE</b>
           <small>Supervisory core</small>
         </button>
@@ -450,27 +436,35 @@ function Moons({ ideas }: { ideas: Idea[] }) {
   );
 }
 
-/* ───────────── category globe ───────────── */
-function Globe({ index, ideas }: { index: number; ideas: Idea[] }) {
+/* ───────────── category sphere: transparent dotted globe, symbol inside, dashed spoke to the Ω ───────────── */
+function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }) {
   const sat = SATELLITES[index];
   const { node, lane, orbit, phase, ringed } = sat;
-  const L = LANES[lane];
+  const col = P.lanes[lane];
   const sym = SYMBOL_BY_ID[node.symbol];
   const atlas = useTexture(SYMBOL_ATLAS.src);
-  const surface = useMemo(() => planetTextures(atlas.image as HTMLImageElement, sym, L.base, L.css, index + 1), [atlas, sym, L, index]);
+  const symTex = useMemo(() => symbolTex(atlas, sym), [atlas, sym]);
+  const shellGeo = useMemo(() => fibonacciShell(420, 0.78), []);
   const root = useRef<THREE.Group>(null);
-  const body = useRef<THREE.Mesh>(null);
+  const shell = useRef<THREE.Points>(null);
+  const symRef = useRef<THREE.Sprite>(null);
   const label = useRef<HTMLButtonElement>(null);
   const mats = useRef<THREE.Material[]>([]);
   const hot = useRef(0);
   const scale = useRef(1);
   const dim = useRef(1);
   const lerp = useFocusLerp();
-  const line = useMemo(() => {
-    const l = new THREE.LineLoop(orbitLine(orbit), new THREE.LineBasicMaterial({ color: 0xcfe0ff, transparent: true, opacity: 0.18, depthWrite: false }));
+  const ring = useMemo(() => {
+    const pts = new THREE.Points(orbitLine(orbit, 320), new THREE.PointsMaterial({ size: 0.045, map: dotTex(), color: P.line, transparent: true, opacity: P.lineOp, depthWrite: false }));
+    pts.frustumCulled = false;
+    return pts;
+  }, [orbit, P]);
+  const spoke = useMemo(() => {
+    const g = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    const l = new THREE.Line(g, new THREE.LineDashedMaterial({ color: col, dashSize: 0.22, gapSize: 0.2, transparent: true, opacity: 0.35, depthWrite: false }));
     l.frustumCulled = false;
     return l;
-  }, [orbit]);
+  }, [col]);
   const e = useMemo(() => new THREE.Vector3(), []);
   const p = useMemo(() => new THREE.Vector3(), []);
   const camN = useMemo(() => new THREE.Vector3(), []);
@@ -478,41 +472,51 @@ function Globe({ index, ideas }: { index: number; ideas: Idea[] }) {
   const pendingCount = ideas.filter((i) => i.state === 'pending').length;
   const confirmedCount = ideas.filter((i) => i.state === 'confirmed').length;
 
-  useFrame(({ camera }, dt) => {
+  useFrame(({ camera, clock }, dt) => {
     const s = getState();
     const selected = s.selected === node.id;
     const other = !!s.selected && !selected;
+    const t = s.reducedMotion ? 0 : clock.elapsedTime;
     const ang = phase + anim.orbitT * orbit.speed;
     orbitPoint(orbit, ang, e);
     planPoint(orbit, ang, p);
     e.lerp(p, anim.blend);
-    // while another globe holds the centre, the rest widen their orbits so nothing crosses the subject
+    // while another sphere holds the centre, the rest widen their orbits so nothing crosses the subject
     if (other) e.multiplyScalar(1.7);
     const pos = lerp(selected ? origin : e, dt, 2.6);
     root.current?.position.copy(pos);
     scale.current = THREE.MathUtils.damp(scale.current, selected ? FOCUS_SCALE : other ? 0.7 : 1, 2.6, dt);
     hot.current = THREE.MathUtils.damp(hot.current, s.hovered === node.id || selected ? 1 : 0, 6, dt);
     dim.current = THREE.MathUtils.damp(dim.current, other ? 0.3 : 1, 3, dt);
-    root.current?.scale.setScalar(scale.current * (1 + hot.current * 0.08));
-    if (body.current) {
-      if (!s.reducedMotion) body.current.rotation.y += dt * (selected ? 0.35 : 0.22);
-      body.current.rotation.x = anim.blend * (Math.PI / 2.3); // plan view: tip the face towards the overhead camera
+    root.current?.scale.setScalar(scale.current * (1 + hot.current * 0.1));
+    if (shell.current && !s.reducedMotion) {
+      shell.current.rotation.y += dt * (selected ? 0.32 : 0.2);
+      shell.current.rotation.x = Math.sin(t * 0.3 + index) * 0.25;
     }
+    if (symRef.current) symRef.current.position.y = Math.sin(t * 1.1 + index) * 0.04;
     mats.current.forEach((m) => {
       if (!m) return;
-      const base = (m.userData.base as number) ?? 1;
-      (m as THREE.Material & { opacity: number }).opacity = base * dim.current;
+      (m as THREE.Material & { opacity: number }).opacity = ((m.userData.base as number) ?? 1) * dim.current * (1 + hot.current * 0.4);
     });
-    (line.material as THREE.LineBasicMaterial).opacity = (0.16 + hot.current * 0.35) * (1 - anim.blend) * (other ? 0.4 : 1);
+    (ring.material as THREE.PointsMaterial).opacity = (P.lineOp + hot.current * 0.3) * (1 - anim.blend * 0.4) * (other ? 0.4 : 1);
+    // dashed spoke from the sphere to the Ω (hidden while a sphere is the subject)
+    const arr = spoke.geometry.getAttribute('position') as THREE.BufferAttribute;
+    arr.setXYZ(0, pos.x, pos.y, pos.z);
+    arr.setXYZ(1, 0, 0, 0);
+    arr.needsUpdate = true;
+    spoke.computeLineDistances();
+    (spoke.material as THREE.LineDashedMaterial).opacity = (0.26 + hot.current * 0.4) * (1 - anim.focus);
     if (label.current) {
       camN.copy(camera.position).normalize();
       const depth = THREE.MathUtils.clamp(0.5 + pos.dot(camN) / (orbit.r * 2), 0, 1);
-      const vis = selected ? 1 : anim.blend > 0.5 ? 1 : 0.35 + 0.65 * THREE.MathUtils.smoothstep(depth, 0.25, 0.6);
-      label.current.style.opacity = String(vis * (other ? 0.35 : 1));
+      // far-side spheres fade their labels away so the front of the ecosphere reads cleanly
+      const vis = selected || hot.current > 0.5 ? 1 : anim.blend > 0.5 ? 1 : THREE.MathUtils.smoothstep(depth, 0.4, 0.62);
+      label.current.style.opacity = String(vis * (other ? 0.3 : 1));
+      label.current.style.pointerEvents = vis < 0.15 ? "none" : "";
       label.current.classList.toggle('on', hot.current > 0.5);
     }
   });
-  const reg = (m: THREE.Material | null, base = 1) => {
+  const reg = (m: THREE.Material | null, base: number) => {
     if (m && !mats.current.includes(m)) {
       m.userData.base = base;
       mats.current.push(m);
@@ -531,47 +535,37 @@ function Globe({ index, ideas }: { index: number; ideas: Idea[] }) {
   };
   return (
     <>
-      <primitive object={line} />
+      <primitive object={ring} />
+      <primitive object={spoke} />
       <group ref={root} name={`eco-${node.id}`}>
-        <mesh ref={body} {...handlers}>
-          <sphereGeometry args={[0.72, 48, 32]} />
-          <meshStandardMaterial
-            ref={(m) => reg(m)}
-            map={surface.map}
-            emissiveMap={surface.emissive}
-            emissive={L.css}
-            emissiveIntensity={0.85}
-            roughness={0.75}
-            metalness={0.1}
-            transparent
-          />
-        </mesh>
-        {/* atmosphere */}
-        <mesh scale={1.12}>
-          <sphereGeometry args={[0.72, 32, 20]} />
-          <shaderMaterial
-            ref={(m) => reg(m as THREE.Material, 1)}
-            transparent
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-            side={THREE.BackSide}
-            uniforms={{ uColor: { value: new THREE.Color(L.css) }, opacity: { value: 1 } }}
-            vertexShader={/* glsl */ `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix*vec4(position,1.0); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`}
-            fragmentShader={/* glsl */ `uniform vec3 uColor; uniform float opacity; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1.0 - abs(dot(vN, vV)), 2.2); gl_FragColor = vec4(uColor, f * 0.9 * opacity); }`}
-          />
-        </mesh>
+        {/* soft halo */}
+        <sprite scale={2.3}>
+          <spriteMaterial ref={(m) => reg(m, P.additive ? 0.32 : 0.22)} map={glowTex()} color={col} transparent opacity={0.3} depthWrite={false} blending={blendFor(P)} />
+        </sprite>
+        {/* transparent dotted sphere */}
+        <points ref={shell} geometry={shellGeo}>
+          <pointsMaterial ref={(m) => reg(m, P.additive ? 0.7 : 0.75)} size={0.05} map={dotTex()} color={col} transparent opacity={0.7} depthWrite={false} blending={blendFor(P)} />
+        </points>
         {ringed && (
           <mesh rotation={[Math.PI / 2.4, 0.2, 0]}>
-            <ringGeometry args={[0.95, 1.35, 96]} />
-            <meshBasicMaterial ref={(m) => reg(m, 0.45)} color={L.css} side={THREE.DoubleSide} transparent opacity={0.45} depthWrite={false} />
+            <ringGeometry args={[0.98, 1.02, 120]} />
+            <meshBasicMaterial ref={(m) => reg(m, 0.5)} color={col} side={THREE.DoubleSide} transparent opacity={0.5} depthWrite={false} />
           </mesh>
         )}
+        {/* the category symbol floating inside */}
+        <sprite ref={symRef} scale={0.92}>
+          <spriteMaterial ref={(m) => reg(m, 1)} map={symTex} color={col} transparent opacity={1} depthWrite={false} toneMapped={false} />
+        </sprite>
+        <mesh scale={0.82} {...handlers}>
+          <sphereGeometry args={[1, 16, 12]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+        </mesh>
         <Moons ideas={ideas} />
-        <Html position={[0.95, 0, 0]} zIndexRange={[3, 0]}>
+        <Html position={[0, -1.08, 0]} center zIndexRange={[3, 0]}>
           <button
             ref={label}
-            className="plabel side"
-            style={{ ['--c' as string]: L.css }}
+            className="plabel"
+            style={{ ['--c' as string]: col }}
             onClick={() => selectNode(node.id)}
             onPointerEnter={() => hoverNode(node.id)}
             onPointerLeave={() => hoverNode(null)}
@@ -593,18 +587,11 @@ function Globe({ index, ideas }: { index: number; ideas: Idea[] }) {
 }
 
 /* ───────────── library flyers: small dotted symbol spheres on free great circles ───────────── */
-function Flyer({ index }: { index: number }) {
+function Flyer({ index, P }: { index: number; P: Palette }) {
   const f = FLYERS[index];
   const atlas = useTexture(SYMBOL_ATLAS.src);
-  const symTex = useMemo(() => {
-    const t = atlas.clone();
-    t.colorSpace = THREE.SRGBColorSpace;
-    t.repeat.set(1 / SYMBOL_ATLAS.cols, 1 / SYMBOL_ATLAS.rows);
-    t.offset.set(f.sym.col / SYMBOL_ATLAS.cols, 1 - (f.sym.row + 1) / SYMBOL_ATLAS.rows);
-    t.needsUpdate = true;
-    return t;
-  }, [atlas, f.sym]);
-  const shell = useMemo(() => fibonacciShell(160, 0.5), []);
+  const symTex = useMemo(() => symbolTex(atlas, f.sym), [atlas, f.sym]);
+  const shell = useMemo(() => fibonacciShell(110, 0.36), []);
   const group = useRef<THREE.Group>(null);
   const shellRef = useRef<THREE.Points>(null);
   const [hover, setHover] = useState(false);
@@ -621,13 +608,13 @@ function Flyer({ index }: { index: number }) {
   return (
     <group ref={group}>
       <points ref={shellRef} geometry={shell}>
-        <pointsMaterial size={0.05} map={dotTex()} color={'#cfe6dc'} transparent opacity={0.55} depthWrite={false} blending={THREE.AdditiveBlending} />
+        <pointsMaterial size={0.035} map={dotTex()} color={P.flyer} transparent opacity={0.32} depthWrite={false} blending={blendFor(P)} />
       </points>
-      <sprite scale={0.68}>
-        <spriteMaterial map={symTex} color={'#e6efe9'} transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+      <sprite scale={0.46}>
+        <spriteMaterial map={symTex} color={P.flyer} transparent opacity={0.45} depthWrite={false} toneMapped={false} />
       </sprite>
       <mesh
-        scale={0.62}
+        scale={0.45}
         onPointerOver={(ev) => {
           ev.stopPropagation();
           setHover(true);
@@ -642,8 +629,8 @@ function Flyer({ index }: { index: number }) {
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
       </mesh>
       {hover && (
-        <Html position={[0.6, 0, 0]} zIndexRange={[3, 0]} style={{ pointerEvents: 'none' }}>
-          <span className="plabel side on" style={{ ['--c' as string]: '#cfe6dc' }}>
+        <Html position={[0, -0.6, 0]} center zIndexRange={[3, 0]} style={{ pointerEvents: 'none' }}>
+          <span className="plabel on" style={{ ['--c' as string]: P.flyer }}>
             <b>{f.sym.name}</b>
             <small>{f.sym.meaning}</small>
           </span>
@@ -654,7 +641,7 @@ function Flyer({ index }: { index: number }) {
 }
 
 /* ───────────── plan rings + faint environment shell ───────────── */
-function Field() {
+function Field({ P }: { P: Palette }) {
   const planRings = useMemo(() => SATELLITES.map((s) => circlePoints(s.orbit.planR, 240)), []);
   const outer = useMemo(() => circlePoints(18.8, 320), []);
   const shell = useMemo(() => fibonacciShell(2400, 18), []);
@@ -662,16 +649,16 @@ function Field() {
   const shellMat = useRef<THREE.PointsMaterial>(null);
   useFrame(() => {
     planMats.current.forEach((m) => m && (m.opacity = 0.45 * anim.blend));
-    if (shellMat.current) shellMat.current.opacity = 0.16 * (1 - anim.blend);
+    if (shellMat.current) shellMat.current.opacity = 0.12 * (1 - anim.blend);
   });
   return (
     <>
       <points geometry={shell}>
-        <pointsMaterial ref={shellMat} size={0.06} map={dotTex()} color={'#6f9fd8'} transparent opacity={0.16} depthWrite={false} />
+        <pointsMaterial ref={shellMat} size={0.05} map={dotTex()} color={P.dot} transparent opacity={0.12} depthWrite={false} />
       </points>
       {[...planRings, outer].map((g, k) => (
         <points key={k} geometry={g}>
-          <pointsMaterial ref={(m) => void (m && (planMats.current[k] = m))} size={0.06} map={dotTex()} color={k === planRings.length ? '#d9b879' : '#cfe0ff'} transparent opacity={0} depthWrite={false} />
+          <pointsMaterial ref={(m) => void (m && (planMats.current[k] = m))} size={0.06} map={dotTex()} color={k === planRings.length ? P.lanes[0] : P.line} transparent opacity={0} depthWrite={false} />
         </points>
       ))}
     </>
@@ -733,27 +720,35 @@ function Rig({ controls }: { controls: React.RefObject<OrbitControlsImpl | null>
   return null;
 }
 
-function Scene() {
+function Scene({ P }: { P: Palette }) {
   const ideas = useIdeas();
   return (
     <>
-      <Sky />
-      <GlyphCloud mode="ambient" count={520} rMin={20} rMax={52} speed={[0.004, 0.018]} size={[0.5, 1.1]} />
-      <GlyphCloud mode="swarm" count={260} rMin={2.9} rMax={7.5} speed={[0.12, 0.42]} size={[0.16, 0.4]} />
-      <Field />
-      <OmegaCore />
+      <Sky P={P} />
+      <GlyphCloud P={P} mode="ambient" count={460} rMin={20} rMax={52} speed={[0.004, 0.016]} size={[0.22, 0.5]} />
+      <GlyphCloud P={P} mode="swarm" count={240} rMin={2.9} rMax={7.5} speed={[0.12, 0.42]} size={[0.1, 0.24]} />
+      <Field P={P} />
+      <OmegaCore P={P} />
       {SATELLITES.map((s, i) => (
-        <Globe key={s.node.id} index={i} ideas={ideas.bySphere[s.node.id] ?? []} />
+        <Globe key={s.node.id} index={i} P={P} ideas={ideas.bySphere[s.node.id] ?? []} />
       ))}
       {FLYERS.map((_, i) => (
-        <Flyer key={i} index={i} />
+        <Flyer key={i} index={i} P={P} />
       ))}
     </>
   );
 }
 
+function ClearColour({ P }: { P: Palette }) {
+  const { gl } = useThree();
+  useEffect(() => gl.setClearColor(P.clear), [gl, P]);
+  return null;
+}
+
 export default function Ecosphere() {
   const lowPower = useUniverse((s) => s.lowPower);
+  const theme = useUniverse((s) => s.theme);
+  const P = PALETTES[theme];
   const controls = useRef<OrbitControlsImpl | null>(null);
   useEffect(() => {
     setState({ introDone: true, phase: getState().selected ? 'NODE_FOCUSED' : 'TEMPLE_IDLE' });
@@ -768,22 +763,22 @@ export default function Ecosphere() {
       aria-label="OMNI ecosphere — 3D view. Use the navigation list for keyboard access."
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.setClearColor('#030812');
       }}
     >
       <ambientLight intensity={0.45} />
       <directionalLight position={[6, 8, 10]} intensity={2.4} color={0xfff0d8} />
       <directionalLight position={[-8, -3, -6]} intensity={0.8} color={0x9fd0ff} />
       <Motion />
+      <ClearColour P={P} />
       <Suspense fallback={null}>
-        <Scene />
+        <Scene key={theme} P={P} />
       </Suspense>
       <OrbitControls ref={controls} makeDefault enablePan={false} enableDamping dampingFactor={0.08} minDistance={5} maxDistance={90} target={ECO_CAM.target} rotateSpeed={0.55} zoomSpeed={0.7} />
       <Rig controls={controls} />
-      {!lowPower && (
+      {!lowPower && P.bloom && (
         <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.55} luminanceSmoothing={0.2} radius={0.7} />
-          <Vignette eskil={false} offset={0.25} darkness={0.65} />
+          <Bloom mipmapBlur intensity={0.8} luminanceThreshold={0.55} luminanceSmoothing={0.2} radius={0.7} />
+          <Vignette eskil={false} offset={0.25} darkness={0.6} />
         </EffectComposer>
       )}
     </Canvas>

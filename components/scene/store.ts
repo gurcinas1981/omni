@@ -17,6 +17,8 @@ export interface UniverseState {
   openerActive: boolean;
   /** Ecosphere (3D atom) or Plan (top-down) layout. */
   viewMode: 'ecosphere' | 'plan';
+  /** Dark (navy) or Light (silver) theme. */
+  theme: 'dark' | 'light';
 }
 
 let state: UniverseState = {
@@ -28,6 +30,7 @@ let state: UniverseState = {
   introDone: true,
   openerActive: false,
   viewMode: 'ecosphere',
+  theme: 'dark',
 };
 const listeners = new Set<() => void>();
 
