@@ -11,7 +11,7 @@ import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { OMEGA_PATH } from '@/lib/brand/omega';
 import { foxShards, foxGoldMaterial } from '@/lib/brand/fox';
 import { SYMBOL_ATLAS, SYMBOL_BY_ID } from '@/lib/registry/symbols';
-import { NODES } from '@/lib/registry/nodes';
+import { LANES, SATELLITES, orbitBasis, dottedCircle } from '@/lib/registry/ecosphere';
 import { SEEN_KEY } from './openerGate';
 
 const DURATION = 9.2;
@@ -24,18 +24,6 @@ const BOOT_LINES = [
   '> CONVENE EXPERT COUNCIL · 8 DISCIPLINES · 17 SKILLS',
   '> OMNISYNAPSE ONLINE · HUMAN APPROVAL REQUIRED',
 ];
-
-/* three orbital lanes: human domains (gold), synthetic domains (cyan), cycle + guardians (violet) */
-const LANES = [
-  { r: 4.9, incl: 0.42, node: 0.2, speed: 0.2, tint: 0xf4dea6, css: '#f4dea6' },
-  { r: 6.1, incl: -0.6, node: 1.5, speed: -0.14, tint: 0x8fe9ff, css: '#8fe9ff' },
-  { r: 7.2, incl: 0.95, node: 2.7, speed: 0.09, tint: 0xd9c3ff, css: '#d9c3ff' },
-];
-/** Every category (except the Ω and FOX at the centre) orbits as its own library symbol. */
-const SATELLITES = NODES.filter((n) => n.kind !== 'core' && n.kind !== 'gateway').map((n) => ({
-  node: n,
-  lane: n.kind === 'symbol' ? (n.side === 'left' ? 0 : 1) : 2,
-}));
 
 function glowTexture(color: string) {
   const c = document.createElement('canvas');
@@ -61,24 +49,6 @@ function dotTexture() {
   g.fillRect(0, 0, 32, 32);
   return new THREE.CanvasTexture(c);
 }
-function orbitBasis(incl: number, node: number) {
-  const u = new THREE.Vector3(Math.cos(node), 0, Math.sin(node));
-  const v = new THREE.Vector3(-Math.sin(node) * Math.cos(incl), Math.sin(incl), Math.cos(node) * Math.cos(incl));
-  return { u, v };
-}
-function dottedCircle(r: number, n: number, u: THREE.Vector3, v: THREE.Vector3) {
-  const a = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const t = (i / n) * Math.PI * 2;
-    const c = Math.cos(t) * r;
-    const s = Math.sin(t) * r;
-    a.set([u.x * c + v.x * s, u.y * c + v.y * s, u.z * c + v.z * s], i * 3);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(a, 3));
-  return g;
-}
-
 export default function OmniOpener({ onDone }: { onDone: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [titleIn, setTitleIn] = useState(false);
@@ -244,9 +214,6 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
     atlas.colorSpace = THREE.SRGBColorSpace;
     atlas.anisotropy = 4;
     type Sat = { sprite: THREE.Sprite; lane: number; phase: number; from: THREE.Vector3; delay: number; label: HTMLElement | null };
-    const laneCount = [0, 0, 0];
-    SATELLITES.forEach((x) => laneCount[x.lane]++);
-    const laneIdx = [0, 0, 0];
     const sats: Sat[] = SATELLITES.map(({ node, lane }, i) => {
       const sym = SYMBOL_BY_ID[node.symbol];
       const tex = atlas.clone();
@@ -257,7 +224,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       sprite.scale.setScalar(0.001);
       sprite.name = node.id;
       eco.add(sprite);
-      const phase = (laneIdx[lane]++ / laneCount[lane]) * Math.PI * 2 + lane * 0.5;
+      const phase = SATELLITES[i].phase;
       const ang = Math.random() * Math.PI * 2;
       return {
         sprite,

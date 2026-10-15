@@ -10,6 +10,8 @@ import SymbolIcon from './SymbolIcon';
 import { SYMBOL_BY_ID } from '@/lib/registry/symbols';
 
 const Universe = dynamic(() => import('@/components/scene/Universe'), { ssr: false });
+const Ecosphere = dynamic(() => import('@/components/scene/Ecosphere'), { ssr: false });
+type View = 'ecosphere' | 'temple';
 const OmniOpener = dynamic(() => import('./OmniOpener'), { ssr: false });
 
 function hasWebGL() {
@@ -57,6 +59,7 @@ function ToolRow({ tool }: { tool: FoxTool }) {
 export default function UniverseExperience() {
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [opener, setOpener] = useState(false);
+  const [view, setView] = useState<View>('ecosphere');
   const selected = useUniverse((s) => s.selected);
   const hovered = useUniverse((s) => s.hovered);
   const introDone = useUniverse((s) => s.introDone);
@@ -67,6 +70,9 @@ export default function UniverseExperience() {
 
   useEffect(() => {
     setWebgl(hasWebGL());
+    try {
+      if (localStorage.getItem('omni-view') === 'temple') setView('temple');
+    } catch {}
     if (shouldPlayOpener()) {
       setOpener(true);
       setState({ openerActive: true });
@@ -160,7 +166,7 @@ export default function UniverseExperience() {
         />
       )}
       <div className="stage" aria-hidden={webgl === false}>
-        {webgl === true && <Universe />}
+        {webgl === true && (view === 'ecosphere' ? <Ecosphere /> : <Universe />)}
         {webgl === false && (
           <div className="poster" role="img" aria-label="OMNISYNAPSE temple — static view (WebGL unavailable)" />
         )}
@@ -178,6 +184,24 @@ export default function UniverseExperience() {
           </span>
         </Link>
         <nav className="top-actions" aria-label="View controls">
+          <div className="seg" role="group" aria-label="View">
+            {(['ecosphere', 'temple'] as View[]).map((v) => (
+              <button
+                key={v}
+                className={`chip ${view === v ? 'chip-on' : ''}`}
+                aria-pressed={view === v}
+                onClick={() => {
+                  selectNode(null);
+                  setView(v);
+                  try {
+                    localStorage.setItem('omni-view', v);
+                  } catch {}
+                }}
+              >
+                {v === 'ecosphere' ? 'Ecosphere' : 'Temple'}
+              </button>
+            ))}
+          </div>
           <button className="chip" onClick={() => selectNode(null)} title="Reset view (R)">
             Reset
           </button>
@@ -212,7 +236,7 @@ export default function UniverseExperience() {
           </button>
         </div>
       )}
-      {introDone && !node && (
+      {introDone && !node && view === 'temple' && (
         <div className="hero" aria-hidden="true">
           <p className="hero-title">
             OMNISYNAPSE <span>Ω</span>

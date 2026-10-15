@@ -243,3 +243,14 @@ a.btn, a.chip, a.cta { text-decoration: none; display: inline-flex; align-items:
 .op-labels b { font: 600 10px ui-monospace, 'Space Mono', Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--c); }
 .op-labels small { font: italic 500 12px var(--serif); color: #c9b98f; }
 @media (max-width: 760px) { .op-labels small { display: none; } .op-labels b { font-size: 8.5px; } }
+
+.seg { display: inline-flex; gap: 0; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: rgba(10,16,22,.6); backdrop-filter: blur(8px); }
+.seg .chip { border: 0; background: transparent; padding: 5px 11px; }
+.seg .chip-on { background: rgba(200,169,106,.2); color: var(--gold-hi); }
+/* ORBIT-style 3D labels */
+.plabel { appearance: none; display: flex; flex-direction: column; align-items: center; gap: 1px; white-space: nowrap; cursor: pointer; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); background: rgba(2,6,5,.66); backdrop-filter: blur(5px); color: inherit; transition: border-color .2s, transform .15s, opacity .25s; }
+.plabel b { font: 600 10px ui-monospace, 'Space Mono', Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--c); }
+.plabel small { font: italic 500 12px var(--serif); color: #c9b98f; }
+.plabel:hover, .plabel.on { border-color: var(--c); transform: scale(1.06); box-shadow: 0 0 18px color-mix(in srgb, var(--c) 35%, transparent); opacity: 1 !important; }
+@media (max-width: 760px) { .plabel small { display: none; } .plabel b { font-size: 8.5px; letter-spacing: .1em; } .seg .chip { padding: 5px 8px; } }
