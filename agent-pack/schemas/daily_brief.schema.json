@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OMNISYNAPSE daily briefing",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "sources_accessed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unconnected_systems": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "strategic_signal": {
+      "type": "string"
+    },
+    "upgrades": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "recommendation.schema.json"
+      }
+    },
+    "new_niche": {
+      "type": "string"
+    },
+    "risk": {
+      "type": "string"
+    },
+    "founder_decision": {
+      "type": "string"
+    },
+    "no_material_change": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "date",
+    "sources_accessed",
+    "strategic_signal",
+    "upgrades",
+    "no_material_change"
+  ]
+}

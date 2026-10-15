@@ -1,0 +1,41 @@
+{
+  "name": "omnisynapse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OMNISYNAPSE \u03a9 \u2014 private supervisory intelligence service for FOX Intelligence",
+  "scripts": {
+    "prebuild": "node scripts/build-skills.mjs",
+    "predev": "node scripts/build-skills.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/build-skills.mjs && vitest run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "@react-three/postprocessing": "^3.2.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "next": "^15.5.28",
+    "postprocessing": "^6.39.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "simplex-noise": "^4.0.3",
+    "three": "^0.186.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.4"
+  }
+}

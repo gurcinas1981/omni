@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.foxintelligence.co.uk/omnisynapse/recommendation.schema.json",
+  "title": "OMNISYNAPSE recommendation",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "impacted_systems",
+    "cognitive_benefit",
+    "evidence_ids",
+    "cost_gbp",
+    "estimated_effort",
+    "scores",
+    "status",
+    "demo"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "impacted_systems": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cognitive_benefit": {
+      "type": "string"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cost_gbp": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "estimated_effort": {
+      "type": "string"
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 5
+      }
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "reviewed",
+        "approved",
+        "rejected",
+        "queued",
+        "completed",
+        "failed"
+      ]
+    },
+    "demo": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

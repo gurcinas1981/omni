@@ -1,0 +1,31 @@
+{
+  "kind": "recommendation",
+  "records": [
+    {
+      "id": "demo-shared-site-identity",
+      "title": "DEMO — Shared Site Record across FOX",
+      "summary": "Hypothetical proposal to connect land discoveries, planning risk, feasibility and digital-twin records around a persistent parcel/site identity.",
+      "impacted_systems": ["LAND IQ", "LAND SEARCH", "PLANNING RADAR", "LAND PASSPORT"],
+      "cognitive_benefit": "Fewer repeated site checks and better traceability of decisions",
+      "evidence_ids": ["demo-planning-docs"],
+      "cost_gbp": null,
+      "estimated_effort": "Medium (unvalidated)",
+      "scores": {"strategic_alignment":5,"commercial_value":4,"cross_platform_reuse":5,"technical_feasibility":3,"cognitive_amplification":4,"evidence_strength":3,"implementation_effort":3,"security_risk":2,"uncertainty":3},
+      "status": "proposed",
+      "demo": true
+    },
+    {
+      "id": "demo-agent-skills",
+      "title": "DEMO — Agent Skill Registry and Evaluation",
+      "summary": "Hypothetical proposal to standardise NEXUS specialist workflows as testable, auditable agent skills.",
+      "impacted_systems": ["NEXUS", "ORBIT"],
+      "cognitive_benefit": "Reusable, reviewable reasoning workflows and fewer inconsistent outputs",
+      "evidence_ids": ["demo-agent-skill-spec"],
+      "cost_gbp": null,
+      "estimated_effort": "Low to medium (unvalidated)",
+      "scores": {"strategic_alignment":5,"commercial_value":3,"cross_platform_reuse":5,"technical_feasibility":4,"cognitive_amplification":4,"evidence_strength":4,"implementation_effort":2,"security_risk":2,"uncertainty":2},
+      "status": "proposed",
+      "demo": true
+    }
+  ]
+}

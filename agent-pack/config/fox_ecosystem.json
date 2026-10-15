@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "owner_role": "visionary_innovator",
+  "supervisory_agent": "omnisynapse-omega",
+  "monitoring_note": "All integrations unverified and disabled by default. URLs are identifiers/reference links, not connection claims.",
+  "systems": [
+    {
+      "id": "fox-ecosystem",
+      "name": "FOX Ecosystem",
+      "reference_url": "https://ecosystem.foxintelligence.co.uk/",
+      "category": "ecosystem",
+      "description": "Orbit environment / main portal",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-orbit",
+      "name": "ORBIT",
+      "reference_url": "https://ecosystem.foxintelligence.co.uk/",
+      "category": "observability",
+      "description": "Monitoring and visual intelligence layer — mapping requires confirmation",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-nexus",
+      "name": "NEXUS",
+      "reference_url": "https://nexus.foxintelligence.co.uk/",
+      "category": "orchestration",
+      "description": "Authenticated execution and connector system",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-land-iq",
+      "name": "LAND IQ",
+      "reference_url": "https://landiq.foxintelligence.co.uk/",
+      "category": "land-analytics",
+      "description": "Land feasibility, intelligence and development appraisal",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-land-search",
+      "name": "LAND SEARCH",
+      "reference_url": "https://land.foxatlas.co.uk/",
+      "category": "discovery",
+      "description": "UK land/property opportunity sourcing (endpoint/function must be confirmed)",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-planning-radar",
+      "name": "PLANNING RADAR",
+      "reference_url": "https://radar.foxintelligence.co.uk/",
+      "category": "policy",
+      "description": "Planning and development policy monitoring",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-land-passport",
+      "name": "LAND PASSPORT",
+      "reference_url": "https://landpassport.foxintelligence.co.uk/",
+      "category": "digital-twin",
+      "description": "Persistent site/asset identity and digital twin",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-atlas",
+      "name": "FOX ATLAS",
+      "reference_url": "https://www.foxatlas.co.uk/",
+      "category": "marketplace",
+      "description": "Marketing and land discovery",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-intelligence",
+      "name": "FOX INTELLIGENCE",
+      "reference_url": "https://www.foxintelligence.co.uk/",
+      "category": "corporate",
+      "description": "Public branding and platform overview",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    },
+    {
+      "id": "fox-derby-pilot",
+      "name": "DERBY PILOT",
+      "reference_url": "https://derbypilot.foxintelligence.co.uk/",
+      "category": "pilot",
+      "description": "Land Passport research and demonstration",
+      "connected": false,
+      "read_only": true,
+      "api_adapter": "UNCONFIGURED",
+      "credential_env_var": null,
+      "last_verified": null
+    }
+  ]
+}

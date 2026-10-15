@@ -1,0 +1,30 @@
+{
+  "policy": "All disabled until operator enables and validates rights, availability, and scope. Read public RSS/Atom feeds only. No unauthorised scraping.",
+  "feeds": [
+    {
+      "id": "arxiv-ai",
+      "url": "https://rss.arxiv.org/rss/cs.AI",
+      "domain": "ai-science",
+      "enabled": false
+    },
+    {
+      "id": "arxiv-ml",
+      "url": "https://rss.arxiv.org/rss/cs.LG",
+      "domain": "ai-science",
+      "enabled": false
+    },
+    {
+      "id": "arxiv-computation",
+      "url": "https://rss.arxiv.org/rss/cs.NE",
+      "domain": "neuromorphic-computing",
+      "enabled": false
+    },
+    {
+      "id": "github-blog",
+      "url": "https://github.blog/feed/",
+      "domain": "developer-platforms",
+      "enabled": false
+    }
+  ],
+  "metadata": "Feed items are source observations; they are NOT validated product claims or scored proposals."
+}

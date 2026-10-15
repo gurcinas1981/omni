@@ -1,0 +1,180 @@
+{
+  "source": "Creative interpretation of supplied image; glyph motifs are not claimed as historically verified translations",
+  "nodes": [
+    {
+      "id": "human-consciousness",
+      "label": "Human Consciousness",
+      "shape": "meditating figure",
+      "position_pct": [
+        28.5,
+        15.0
+      ],
+      "domain": "Human insight, consciousness, intuition, wellbeing",
+      "suggested_tools": [
+        "OMNISYNAPSE"
+      ],
+      "interaction": "Focus brain organic hemisphere and show cognition explanation"
+    },
+    {
+      "id": "galaxy",
+      "label": "Cosmic Intelligence",
+      "shape": "spiral galaxy",
+      "position_pct": [
+        23.5,
+        30.5
+      ],
+      "domain": "Discovery, scale, knowledge exploration, emergent complexity",
+      "suggested_tools": [
+        "ORBIT"
+      ],
+      "interaction": "Reveal the ecosystem as a navigable universe"
+    },
+    {
+      "id": "pyramid",
+      "label": "Architecture & Creation",
+      "shape": "golden stepped pyramid",
+      "position_pct": [
+        25.0,
+        44.0
+      ],
+      "domain": "Architecture, construction, engineering, historical knowledge",
+      "suggested_tools": [
+        "LAND_PASSPORT"
+      ],
+      "interaction": "Explain land-to-building digital twin life cycle"
+    },
+    {
+      "id": "sacred-geometry",
+      "label": "Geometry & Geospatial",
+      "shape": "flower-of-life star mandala",
+      "position_pct": [
+        31.0,
+        57.0
+      ],
+      "domain": "Spatial mathematics, topology, geometry, pattern logic",
+      "suggested_tools": [
+        "LAND_IQ"
+      ],
+      "interaction": "Expose land geospatial intelligence capabilities"
+    },
+    {
+      "id": "eye-of-horus",
+      "label": "Observation & Awareness",
+      "shape": "Egyptian eye motif",
+      "position_pct": [
+        72.0,
+        15.0
+      ],
+      "domain": "Monitoring, perception, awareness, safeguarding",
+      "suggested_tools": [
+        "OBSERVATORY",
+        "PLANNING_RADAR"
+      ],
+      "interaction": "Open monitoring and change detection tools"
+    },
+    {
+      "id": "scarab",
+      "label": "Evolution & Transformation",
+      "shape": "Egyptian scarab",
+      "position_pct": [
+        77.0,
+        30.0
+      ],
+      "domain": "Renewal, learning, iteration and workflow improvement",
+      "suggested_tools": [
+        "NEXUS"
+      ],
+      "interaction": "Show connected agents, tools and learning feedback loops"
+    },
+    {
+      "id": "logic-mandala",
+      "label": "Structured Logic",
+      "shape": "square golden fractal mandala",
+      "position_pct": [
+        75.0,
+        44.0
+      ],
+      "domain": "Logic, categorisation, analytical workflows, structured data",
+      "suggested_tools": [
+        "LAND_SEARCH"
+      ],
+      "interaction": "Explore parameterised search and analysis"
+    },
+    {
+      "id": "synthesis-triangle",
+      "label": "Synthesis & Decision",
+      "shape": "triangular frame with violet glowing point",
+      "position_pct": [
+        69.0,
+        57.0
+      ],
+      "domain": "Decision support, planning scenarios, synthesised intelligence",
+      "suggested_tools": [
+        "LAND_IQ"
+      ],
+      "interaction": "Introduce scenario comparison and decisions"
+    },
+    {
+      "id": "organic-brain",
+      "label": "OMNISYNAPSE Ω",
+      "shape": "dual organic/holographic human brain",
+      "position_pct": [
+        50,
+        29
+      ],
+      "domain": "Central cognitive operating intelligence",
+      "suggested_tools": [
+        "OMNISYNAPSE"
+      ],
+      "interaction": "Enter high-level command interface"
+    },
+    {
+      "id": "fox-insignia",
+      "label": "FOX Intelligence Ecosystem",
+      "shape": "faceted gold fox head",
+      "position_pct": [
+        50,
+        61
+      ],
+      "domain": "Identity and full FOX tool landscape",
+      "suggested_tools": [
+        "ORBIT",
+        "NEXUS",
+        "LAND_IQ",
+        "FOX_ATLAS",
+        "LAND_SEARCH",
+        "PLANNING_RADAR",
+        "LAND_PASSPORT"
+      ],
+      "interaction": "Open full navigation registry"
+    },
+    {
+      "id": "left-guardian",
+      "label": "Security & Permissions",
+      "shape": "black/gold seated jackal guardian",
+      "position_pct": [
+        6,
+        67
+      ],
+      "domain": "User authentication, authorisation and privilege boundaries",
+      "suggested_tools": [
+        "NEXUS"
+      ],
+      "interaction": "Show security/access area"
+    },
+    {
+      "id": "right-guardian",
+      "label": "Integrity & Audit",
+      "shape": "black/gold seated jackal guardian",
+      "position_pct": [
+        94,
+        67
+      ],
+      "domain": "Provenance, validation, audit trail and safeguards",
+      "suggested_tools": [
+        "OBSERVATORY"
+      ],
+      "interaction": "Show integrity/monitoring area"
+    }
+  ]
+}

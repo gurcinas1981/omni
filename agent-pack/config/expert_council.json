@@ -1,0 +1,85 @@
+{
+  "members": [
+    {
+      "id": "ai-computing",
+      "title": "Chief AI and Computing Scientist",
+      "roles": [
+        "AI Research Scientist",
+        "Principal LLM Engineer",
+        "Neuromorphic Researcher"
+      ],
+      "challenge": "Can benchmark improvements beat a simpler model or a deterministic process?"
+    },
+    {
+      "id": "software-systems",
+      "title": "Chief Software and Systems Architect",
+      "roles": [
+        "Principal Software Engineer",
+        "Enterprise Architect",
+        "SRE"
+      ],
+      "challenge": "Are architecture, contracts, performance and maintainability justified?"
+    },
+    {
+      "id": "land-construction",
+      "title": "Chief Land and Built Environment Analyst",
+      "roles": [
+        "Chartered Planner",
+        "Architect",
+        "Chartered Surveyor/Valuer"
+      ],
+      "challenge": "Are UK planning/legal/professional premises supportable by site evidence?"
+    },
+    {
+      "id": "geospatial-science",
+      "title": "Chief Geospatial Scientist",
+      "roles": [
+        "GIS Data Scientist",
+        "Remote Sensing Expert",
+        "Environmental Scientist"
+      ],
+      "challenge": "Are data coverage, provenance, geometry and uncertainty robust?"
+    },
+    {
+      "id": "business-investment",
+      "title": "Chief Finance and Commercial Strategist",
+      "roles": [
+        "Economist",
+        "Financial Modeller",
+        "Venture Strategist"
+      ],
+      "challenge": "What is the route to validated value, cost and commercial defensibility?"
+    },
+    {
+      "id": "law-governance",
+      "title": "Chief Regulatory and Security Adviser",
+      "roles": [
+        "IP/Planning Lawyer Persona",
+        "DPO Persona",
+        "Risk Analyst"
+      ],
+      "challenge": "Which rights, permissions, liabilities and security controls are missing?"
+    },
+    {
+      "id": "design-product",
+      "title": "Chief Product and Communications Director",
+      "roles": [
+        "UX Designer",
+        "Visualisation Director",
+        "Growth Strategist"
+      ],
+      "challenge": "Will a real customer understand and repeatedly use this proposition?"
+    },
+    {
+      "id": "future-research",
+      "title": "Chief Futures and Critical Inquiry Analyst",
+      "roles": [
+        "Foresight Researcher",
+        "Science Editor",
+        "Devils Advocate"
+      ],
+      "challenge": "Is this emerging signal credible, disruptive, or speculative hype?"
+    }
+  ],
+  "notice": "Role names are AI workflow labels and do not replace human qualified professionals."
+}

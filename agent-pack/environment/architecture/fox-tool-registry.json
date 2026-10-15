@@ -1,0 +1,86 @@
+{
+  "notes": "URLs are navigational targets only. Do not infer that API connections exist. Private route permissions must be enforced server-side.",
+  "tools": [
+    {
+      "id": "OMNISYNAPSE",
+      "name": "OMNISYNAPSE Ω",
+      "role": "Highest-level cognitive orchestration",
+      "url": null,
+      "category": "core",
+      "visibility": "private",
+      "integration_status": "not_configured"
+    },
+    {
+      "id": "ORBIT",
+      "name": "FOX ORBIT / Ecosystem",
+      "role": "Spatial navigation, ecosystem visualisation and monitoring",
+      "url": "https://ecosystem.foxintelligence.co.uk/",
+      "category": "core",
+      "visibility": "private",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "NEXUS",
+      "name": "FOX NEXUS",
+      "role": "Integrations, connections and tool orchestration",
+      "url": "https://nexus.foxintelligence.co.uk/",
+      "category": "core",
+      "visibility": "private",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "LAND_IQ",
+      "name": "Land IQ",
+      "role": "Land intelligence, feasibility and valuations",
+      "url": "https://landiq.foxintelligence.co.uk/",
+      "category": "analysis",
+      "visibility": "private",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "FOX_ATLAS",
+      "name": "FOX Atlas / Land",
+      "role": "Discovery and land browsing",
+      "url": "https://land.foxatlas.co.uk/",
+      "category": "discovery",
+      "visibility": "private",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "LAND_SEARCH",
+      "name": "Land Search",
+      "role": "Parameterised land opportunity search",
+      "url": null,
+      "category": "discovery",
+      "visibility": "private",
+      "integration_status": "not_configured"
+    },
+    {
+      "id": "PLANNING_RADAR",
+      "name": "Planning Radar",
+      "role": "Planning application and policy monitoring",
+      "url": "https://radar.foxintelligence.co.uk/",
+      "category": "monitoring",
+      "visibility": "private",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "LAND_PASSPORT",
+      "name": "Land Passport / Derby Pilot",
+      "role": "Persistent digital twin identity",
+      "url": "https://derbypilot.foxintelligence.co.uk/",
+      "category": "digital_twin",
+      "visibility": "public_info_only",
+      "integration_status": "link_only"
+    },
+    {
+      "id": "OBSERVATORY",
+      "name": "Observatory",
+      "role": "Operations, performance, connections and audit",
+      "url": null,
+      "category": "monitoring",
+      "visibility": "private",
+      "integration_status": "not_configured"
+    }
+  ]
+}

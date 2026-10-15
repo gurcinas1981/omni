@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.foxintelligence.co.uk/omnisynapse/decision.schema.json",
+  "title": "OMNISYNAPSE decision",
+  "type": "object",
+  "required": [
+    "id",
+    "created_at",
+    "project_id",
+    "hypothesis",
+    "options",
+    "decision",
+    "approved_by_human",
+    "evidence_ids",
+    "expected_outcome",
+    "observed_outcome",
+    "lesson"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "hypothesis": {
+      "type": "string"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "decision": {
+      "type": "string"
+    },
+    "approved_by_human": {
+      "type": "boolean"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_outcome": {
+      "type": "string"
+    },
+    "observed_outcome": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lesson": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

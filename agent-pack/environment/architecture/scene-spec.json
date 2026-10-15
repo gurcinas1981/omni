@@ -1,0 +1,215 @@
+{
+  "project": "OMNISYNAPSE Ω — The Cognitive Universe",
+  "version": "1.0.0",
+  "design_reference": "reference/omnisynapse-reference.png",
+  "original_image": {
+    "width": 1648,
+    "height": 928,
+    "ratio": 1.7758620689655173
+  },
+  "coordinate_space": "percentage x/y of uncropped reference artwork",
+  "palette": {
+    "obsidian": "#080C12",
+    "navy": "#071827",
+    "heritage_green": "#163A32",
+    "gold": "#C8A96A",
+    "amber": "#F2B45C",
+    "cyan": "#35D9F5",
+    "blue": "#3D8CFF",
+    "violet": "#9C6BFF",
+    "ivory": "#F7F6F1"
+  },
+  "scene_elements": [
+    {
+      "id": "organic-brain",
+      "kind": "cortical-mesh",
+      "position_pct": [
+        42.5,
+        28
+      ],
+      "role": "Biological Intelligence",
+      "motion": [
+        "gentle neural pulses",
+        "low-amplitude organic breathing"
+      ],
+      "material": "warm organic bronze/gold cortical folds"
+    },
+    {
+      "id": "artificial-brain",
+      "kind": "holographic-neural-mesh",
+      "position_pct": [
+        57.5,
+        28
+      ],
+      "role": "Artificial Intelligence",
+      "motion": [
+        "propagating synaptic impulses",
+        "mesh flicker"
+      ],
+      "material": "transparent electric cyan/blue mesh, violet nodes"
+    },
+    {
+      "id": "central-neural-conduit",
+      "kind": "volumetric-light",
+      "position_pct": [
+        50,
+        45
+      ],
+      "role": "Human-machine intelligence bridge",
+      "motion": [
+        "slow coherent emission"
+      ],
+      "material": "bright white/cyan"
+    },
+    {
+      "id": "fox-insignia",
+      "kind": "faceted-gold-mesh",
+      "position_pct": [
+        50,
+        61
+      ],
+      "role": "FOX Ecosystem Gateway",
+      "motion": [
+        "hover",
+        "gold pulse"
+      ],
+      "material": "faceted metallic antique gold"
+    },
+    {
+      "id": "central-altar",
+      "kind": "multi-ring-mesh",
+      "position_pct": [
+        50,
+        79
+      ],
+      "role": "Energy Gateway",
+      "motion": [
+        "pulsing golden rings"
+      ],
+      "material": "bronze/black/gold luminous portal"
+    },
+    {
+      "id": "celestial-orbit",
+      "kind": "concentric-orbits",
+      "position_pct": [
+        50,
+        34
+      ],
+      "role": "Intelligence Domains",
+      "motion": [
+        "slow counterrotating rings",
+        "gold beads traverse orbits"
+      ],
+      "material": "gold wireframes and cyan holograms"
+    },
+    {
+      "id": "left-column",
+      "kind": "stone-relief",
+      "position_pct": [
+        7,
+        30
+      ],
+      "role": "Egyptian-style knowledge pillar",
+      "motifs": [
+        "Eye of Horus",
+        "Ankh",
+        "Winged falcon",
+        "Decorative glyphs"
+      ]
+    },
+    {
+      "id": "right-column",
+      "kind": "stone-relief",
+      "position_pct": [
+        93,
+        30
+      ],
+      "role": "Mesoamerican-inspired knowledge pillar",
+      "motifs": [
+        "Sun-face medallion",
+        "Stepped pyramid",
+        "Calendar-style medallion",
+        "Decorative glyphs"
+      ]
+    },
+    {
+      "id": "left-guardian",
+      "kind": "jackal-statue",
+      "position_pct": [
+        6,
+        65
+      ],
+      "role": "Authentication and permissions"
+    },
+    {
+      "id": "right-guardian",
+      "kind": "jackal-statue",
+      "position_pct": [
+        94,
+        65
+      ],
+      "role": "Data integrity and audit"
+    },
+    {
+      "id": "floor-circuitry",
+      "kind": "circuit-grid",
+      "position_pct": [
+        50,
+        92
+      ],
+      "role": "System interconnections",
+      "motion": [
+        "signals converge to altar"
+      ]
+    },
+    {
+      "id": "matrix-streams",
+      "kind": "background-particles",
+      "position_pct": [
+        50,
+        22
+      ],
+      "role": "Flow of information",
+      "motion": [
+        "subtle varied teal glyph rain"
+      ]
+    },
+    {
+      "id": "cosmic-horizon",
+      "kind": "background-environment",
+      "position_pct": [
+        50,
+        72
+      ],
+      "role": "Ancient future civilization",
+      "motifs": [
+        "planet curvature",
+        "clouds",
+        "pyramids",
+        "obelisks",
+        "futuristic skyline"
+      ]
+    }
+  ],
+  "performance": {
+    "target_fps_desktop": 60,
+    "mobile_fallback": "2.5D reduced particle mode with functional node list",
+    "supports_reduced_motion": true
+  },
+  "interaction_states": [
+    "DORMANT",
+    "AWAKENING",
+    "TEMPLE_IDLE",
+    "NODE_FOCUSED",
+    "NODE_DETAILS",
+    "BRAIN_COMMAND",
+    "FOX_ECOSYSTEM",
+    "OFFLINE",
+    "LOW_POWER"
+  ],
+  "privacy": {
+    "default_access": "private",
+    "public_experience": "intro and explicitly published discovery pages only",
+    "auth_mode": "server-side role based access"
+  }
+}

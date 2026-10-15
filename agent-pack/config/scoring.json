@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "scale": "Each dimension is 0 to 5; total is a relative heuristic, not actual investment ROI",
+  "weights": {
+    "strategic_alignment": 5,
+    "commercial_value": 4,
+    "cross_platform_reuse": 4,
+    "technical_feasibility": 3,
+    "cognitive_amplification": 3,
+    "evidence_strength": 5,
+    "implementation_effort": -2,
+    "security_risk": -4,
+    "uncertainty": -3
+  },
+  "confidence_threshold_for_implementation": 0.75,
+  "default_report_limit": 3,
+  "approval_required_for_execution": true,
+  "notes": "Weights are editable by human. Uncited/unverified observations should not become verified claims."
+}

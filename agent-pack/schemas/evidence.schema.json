@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.foxintelligence.co.uk/omnisynapse/evidence.schema.json",
+  "title": "OMNISYNAPSE evidence",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "source_url",
+    "published_at",
+    "observed_at",
+    "classification",
+    "project_id",
+    "confidence",
+    "demo"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": "string"
+    },
+    "classification": {
+      "enum": [
+        "verified_primary",
+        "credible_secondary",
+        "internal_verified",
+        "unverified",
+        "hypothesis",
+        "speculative"
+      ]
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "demo": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

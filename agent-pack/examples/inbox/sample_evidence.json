@@ -1,0 +1,29 @@
+{
+  "kind": "evidence",
+  "records": [
+    {
+      "id": "demo-planning-docs",
+      "title": "DEMO — England Planning Data documentation (reference only)",
+      "summary": "Illustrative evidence entry demonstrating how a primary planning data source might be linked to FOX analysis. The content and coverage must be freshly checked before real use.",
+      "source_url": "https://www.planning.data.gov.uk/docs",
+      "published_at": null,
+      "observed_at": "2026-10-15T10:00:00+01:00",
+      "classification": "verified_primary",
+      "project_id": "fox-land-iq",
+      "confidence": 0.7,
+      "demo": true
+    },
+    {
+      "id": "demo-agent-skill-spec",
+      "title": "DEMO — Agent Skills specification (reference only)",
+      "summary": "Illustrative documentation evidence for using portable SKILL.md instructions. Confirm the actual host implementation and permissions.",
+      "source_url": "https://agentskills.io/specification",
+      "published_at": null,
+      "observed_at": "2026-10-15T10:00:00+01:00",
+      "classification": "verified_primary",
+      "project_id": "fox-nexus",
+      "confidence": 0.8,
+      "demo": true
+    }
+  ]
+}
