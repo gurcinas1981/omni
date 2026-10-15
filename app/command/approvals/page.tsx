@@ -3,7 +3,8 @@ import { loadCore, loadTasks, fmtDate } from '@/lib/data';
 import { scoreRecommendation, TRANSITIONS, SCORE_FIELDS, TRUSTED, type RecStatus } from '@/lib/engine/core';
 import { SCORING, COUNCIL } from '@/lib/registry/council';
 import ActionForm from '@/components/command/ActionForm';
-import { transitionRecommendation, proposeNexusTask, assignSphere } from '../actions';
+import { transitionRecommendation, proposeNexusTask, assignSphere, dispatchNexusTask } from '../actions';
+import { nexusConfigured } from '@/lib/integrations/nexus';
 import { NODES, NODE_BY_ID } from '@/lib/registry/nodes';
 
 const LABEL: Partial<Record<RecStatus, string>> = {
@@ -28,6 +29,7 @@ const statusPill = (s: string) =>
 export default async function Approvals({ searchParams }: { searchParams: Promise<{ demo?: string }> }) {
   const demo = (await searchParams).demo !== '0';
   const [{ recs, evidence }, tasks] = await Promise.all([loadCore(), loadTasks()]);
+  const nexusReady = nexusConfigured();
   const evById = new Map(evidence.map((e) => [e.id, e]));
   const list = recs
     .filter((r) => demo || !r.demo)
@@ -168,16 +170,28 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
 
       <section className="card" style={{ marginTop: 16 }}>
         <h2>NEXUS task proposals</h2>
+        <p className="small muted">
+          {nexusReady
+            ? 'NEXUS proposal endpoint configured. Sending asks NEXUS to review; it is never an instruction to execute.'
+            : 'NEXUS has no proposal endpoint yet (live NEXUS exposes /api/hook and /api/telemetry only), so proposals stay held. Contract: docs/NEXUS_PROPOSAL_RECEIVER.md.'}
+        </p>
         {tasks.length === 0 ? (
-          <p className="small muted">None. Approved recommendations can be turned into bounded proposals; they stay held until a verified NEXUS adapter exists.</p>
+          <p className="small muted">None. Approved recommendations can be turned into bounded proposals; they stay held until you send them and NEXUS accepts them for review.</p>
         ) : (
           <table className="table">
-            <thead><tr><th>Created</th><th>Intent</th><th>Scope</th><th>Risk</th><th>Cap</th><th>Status</th></tr></thead>
+            <thead><tr><th>Created</th><th>Intent</th><th>Scope</th><th>Risk</th><th>Cap</th><th>Status</th><th /></tr></thead>
             <tbody>
               {tasks.map((t) => (
                 <tr key={t.task_id}>
                   <td>{fmtDate(t.created_at)}</td><td>{t.intent}</td><td className="mono">{t.scope}</td><td>{t.risk_tier}</td>
-                  <td>£{Number(t.max_cost_gbp).toFixed(2)}</td><td><span className="pill pill-warn">{t.dispatch_status.replace('_', ' ')}</span></td>
+                  <td>£{Number(t.max_cost_gbp).toFixed(2)}</td><td><span className={`pill ${t.dispatch_status === 'accepted_for_review' || t.dispatch_status === 'finished' ? 'pill-ok' : 'pill-warn'}`}>{t.dispatch_status.replace(/_/g, ' ')}</span></td>
+                  <td>
+                    {(t.dispatch_status === 'held_unconnected' || t.dispatch_status === 'failed') && nexusReady && ['R0', 'R1', 'R2'].includes(t.risk_tier) ? (
+                      <ActionForm action={dispatchNexusTask} submit="Send to NEXUS for review" variant="btn btn-ghost" confirm={`Send “${t.intent}” (${t.risk_tier}, cap £${Number(t.max_cost_gbp).toFixed(2)}) to NEXUS? NEXUS will review it independently.`}>
+                        <input type="hidden" name="task_id" value={t.task_id} />
+                      </ActionForm>
+                    ) : null}
+                  </td>
                 </tr>
               ))}
             </tbody>

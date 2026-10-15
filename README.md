@@ -17,12 +17,14 @@ OMNISYNAPSE recommends; only the authenticated human owner approves.
 | Evidence ledger + JSON ingestion (agent-pack schemas) | `/command/evidence` | Live |
 | Persistent decision memory, outcomes, lessons, working context, recall | `/command/memory` | Live |
 | Expert council — 8 cells, 17 skills (instruction-only, honestly labelled) | `/command/council` | Live |
-| FOX systems registry + ORBIT telemetry inbox | `/command/systems` | Registry live · ORBIT **UNCONNECTED** |
+| FOX systems registry + ORBIT read-only adapter (health, deployments, P0 risks) | `/command/systems` | Live · ORBIT read verified on first owner visit (auto-refresh ≥15 min) |
 | Governance, risk tiers, password change | `/command/governance` | Live |
 | Append-only audit trail | `/command/audit` | Live |
-| Health probe for ORBIT | `/api/health` | Live |
+| Health probe for ORBIT (configuration only, no data) | `/api/health` | Live |
 
-**Not yet connected (next milestone):** ORBIT read-only adapter, NEXUS authorised task interface, specialist execution workflows. Nothing in the UI claims otherwise.
+**ORBIT:** connected read-only — OMNI pulls `GET /api/observability` (`fox.observability.snapshot.v1`) server-side with `ORBIT_READ_TOKEN` (= `OMNI_READ_TOKEN` on fox-orbit) and records it via the owner-only RPC `record_orbit_sync`.
+**NEXUS:** proposal contract and signed dispatcher built (`lib/integrations/nexus*.ts`, `docs/NEXUS_PROPOSAL_RECEIVER.md`); held until NEXUS deploys a receiver and `NEXUS_PROPOSALS_URL` / `NEXUS_PROPOSALS_SECRET` are set.
+**Not yet built:** specialist execution workflows for the 17 skills (no model API key on omni). Nothing in the UI claims otherwise.
 
 ## Stack
 Next.js 15 (App Router, TypeScript) · React Three Fiber + drei + postprocessing · Supabase (Postgres, Auth, RLS) project `fox-omnisynapse` (eu-west-2) · Vercel (team *Fox*).

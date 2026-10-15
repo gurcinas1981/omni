@@ -5,8 +5,8 @@
 
 ```
 Owner (Visionary Innovator) ──approves──▶ OMNISYNAPSE Ω (this service)
-                                          ├─ reads ◀── ORBIT  (planned: orbit_events, read-only)
-                                          ├─ proposes ──▶ NEXUS (planned: task_proposals → POST /v1/tasks/proposals)
+                                          ├─ reads ◀── ORBIT  (GET /api/observability → orbit_events, read-only, live)
+                                          ├─ proposes ──▶ NEXUS (task_proposals → signed fox.omni.task_proposal.v1; held until receiver exists)
                                           ├─ memory: evidence · recommendations · decisions · context_notes · knowledge graph
                                           └─ council: 17 instruction skills (agent-pack) → future specialist workflows
 ```
@@ -15,9 +15,9 @@ Owner (Visionary Innovator) ──approves──▶ OMNISYNAPSE Ω (this service
 | Interface | Direction | Status |
 |---|---|---|
 | `GET /api/health` | ORBIT → OMNI (poll) | Live, public, no data |
-| `public.orbit_events` | ORBIT → OMNI | Table + UI ready; adapter **UNCONNECTED** |
-| `public.task_proposals` | OMNI → NEXUS | Proposals held with `dispatch_status = held_unconnected` |
-| `public.systems.connection_status` | adapter-verified only | All `UNCONNECTED` |
+| `public.orbit_events` | ORBIT → OMNI | **Live** — `lib/integrations/orbit.ts` + RPC `record_orbit_sync` (owner-only SECURITY DEFINER; the only writer of orbit_events and the ORBIT systems row) |
+| `public.task_proposals` | OMNI → NEXUS | Dispatcher built; held (`held_unconnected`) until `NEXUS_PROPOSALS_URL`/`_SECRET` exist — see `docs/NEXUS_PROPOSAL_RECEIVER.md` |
+| `public.systems.connection_status` | adapter-verified only | `fox-orbit` set by the ORBIT adapter; others `UNCONNECTED` (their health is shown as ORBIT observations, not OMNI connections) |
 | Ingest JSON (agent-pack schemas) | Owner → OMNI | Live via `/command/evidence` |
 
 ## Dependencies on other FOX products
@@ -26,6 +26,6 @@ Owner (Visionary Innovator) ──approves──▶ OMNISYNAPSE Ω (this service
 - No shared database with other products; integration is by API contract only.
 
 ## Open questions for Tomas
-1. Confirm ORBIT's public event/health endpoint and whether NEXUS already exposes a task-proposal API.
+1. ORBIT endpoint confirmed and connected. NEXUS has no task-proposal API yet — deploy the receiver in `docs/NEXUS_PROPOSAL_RECEIVER.md` when ready.
 2. Supabase Auth → Site URL: set to `https://omni.foxintelligence.co.uk` (Dashboard → Authentication → URL Configuration) to enable magic-link sign-in.
 3. Trademark check on "Omni-Synapse" before any external/commercial use (prior public use noted in agent-pack governance).

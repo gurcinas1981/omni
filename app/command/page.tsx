@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { loadCore } from '@/lib/data';
+import { loadCore, fmtDate } from '@/lib/data';
 import { buildBrief, TRUSTED } from '@/lib/engine/core';
 import { SCORING } from '@/lib/registry/council';
 import { INTELLIGENCE_CYCLE } from '@/lib/registry/nodes';
@@ -13,6 +13,8 @@ export default async function BriefPage({ searchParams }: { searchParams: Promis
   const trusted = evidence.filter((e) => TRUSTED.has(e.classification) && (demo || !e.demo)).length;
   const awaiting = recs.filter((r) => (r.status === 'proposed' || r.status === 'reviewed') && (demo || !r.demo)).length;
   const approved = recs.filter((r) => r.status === 'approved' && (demo || !r.demo)).length;
+  const orbit = systems.find((s) => s.id === 'fox-orbit');
+  const orbitOk = orbit?.connection_status === 'READ_ONLY_VERIFIED';
   const verified = systems.filter((s) => s.connection_status === 'READ_ONLY_VERIFIED' || s.connection_status === 'WRITE_SCOPED').length;
 
   return (
@@ -89,17 +91,23 @@ export default async function BriefPage({ searchParams }: { searchParams: Promis
             <p className="small muted">Stages 01–04 run inside specialist workflows once connected; today OMNISYNAPSE performs 05 Recommend and 06 Learn over records you ingest.</p>
           </section>
           <section className="card">
-            <h2>Next milestone</h2>
+            <h2>Connections</h2>
             <h3>Ground recommendations in real FOX activity</h3>
             <ol className="small" style={{ paddingLeft: 18, lineHeight: 1.6 }}>
-              <li>ORBIT read-only telemetry adapter → <code>orbit_events</code></li>
-              <li>NEXUS authorised task interface → <code>task_proposals</code> dispatch</li>
-              <li>Persistent decision memory — <strong>live now</strong> (decision ledger &amp; context)</li>
+              <li>
+                ORBIT read-only adapter → <code>orbit_events</code> —{' '}
+                {orbitOk ? <strong>verified {fmtDate(orbit?.last_verified)}</strong> : <span>{(orbit?.connection_status ?? 'UNCONNECTED').replace(/_/g, ' ').toLowerCase()}</span>}
+              </li>
+              <li>NEXUS authorised task interface → proposals held until NEXUS exposes a proposal endpoint</li>
+              <li>Persistent decision memory — <strong>live</strong> (decision ledger &amp; context)</li>
             </ol>
             <p className="small">
-              <span className="pill pill-warn">ORBIT unconnected</span> <span className="pill pill-warn">NEXUS unconnected</span>{' '}
-              <span className="pill pill-ok">Memory live</span>
+              <span className={`pill ${orbitOk ? 'pill-ok' : 'pill-warn'}`}>ORBIT {orbitOk ? 'read verified' : 'not verified'}</span>{' '}
+              <span className="pill pill-warn">NEXUS held</span> <span className="pill pill-ok">Memory live</span>
             </p>
+            <Link className="small" href="/command/systems">
+              Open systems &amp; ORBIT telemetry →
+            </Link>
           </section>
         </div>
       </div>

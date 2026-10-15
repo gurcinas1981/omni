@@ -15,6 +15,7 @@ export interface SystemFull extends SystemRow {
   description: string | null;
   last_verified: string | null;
   verification_evidence: string | null;
+  updated_at: string | null;
 }
 export interface DecisionRow {
   id: string;

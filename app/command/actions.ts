@@ -3,6 +3,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { supabaseServer, getOwner } from '@/lib/supabase/server';
 import { NODE_BY_ID } from '@/lib/registry/nodes';
+import { syncOrbit } from '@/lib/integrations/orbit';
+import { sendProposal, nexusConfigured } from '@/lib/integrations/nexus';
+import { checkDispatchable, ProposalError, type TaskRow } from '@/lib/integrations/nexusContract';
 import { parseIngestPayload, canTransition, ValidationError, type RecStatus, type Recommendation, REC_STATUSES } from '@/lib/engine/core';
 
 export type ActionResult = { ok: boolean; message: string };
@@ -30,6 +33,14 @@ export async function transitionRecommendation(_: ActionResult | null, form: For
   if (error) return { ok: false, message: error.message };
   revalidatePath('/command', 'layout');
   return { ok: true, message: `Moved to ${to.replace('_', ' ')}` };
+}
+
+/* ── ORBIT read-only adapter: owner-triggered sync ── */
+export async function syncOrbitNow(_: ActionResult | null): Promise<ActionResult> {
+  await requireOwner();
+  const r = await syncOrbit();
+  revalidatePath('/command', 'layout');
+  return { ok: r.ok, message: r.message };
 }
 
 /* ── Assign an idea to an OMNI sphere (it orbits that globe as a moon) ── */
@@ -174,7 +185,32 @@ export async function proposeNexusTask(_: ActionResult | null, form: FormData): 
   });
   if (error) return { ok: false, message: error.message };
   revalidatePath('/command/approvals');
-  return { ok: true, message: 'Task proposal held — NEXUS adapter not yet connected, nothing was dispatched' };
+  return {
+    ok: true,
+    message: nexusConfigured() ? 'Task proposal held — send it to NEXUS from the proposals table when ready' : 'Task proposal held — NEXUS proposal endpoint not configured, nothing was dispatched',
+  };
+}
+
+/* ── Send a held proposal to NEXUS for review (owner click only; NEXUS decides independently) ── */
+export async function dispatchNexusTask(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  await requireOwner();
+  if (!nexusConfigured()) return { ok: false, message: 'NEXUS proposal endpoint is not configured — the proposal stays held' };
+  const sb = await supabaseServer();
+  const { data: task } = await sb.from('task_proposals').select('*').eq('task_id', str(form, 'task_id', 64)).maybeSingle();
+  if (!task) return { ok: false, message: 'Task proposal not found' };
+  const { data: rec } = task.recommendation_id
+    ? await sb.from('recommendations').select('status').eq('id', task.recommendation_id).maybeSingle()
+    : { data: null };
+  try {
+    checkDispatchable(task as TaskRow, rec?.status ?? null);
+  } catch (e) {
+    return { ok: false, message: e instanceof ProposalError ? e.message : 'Not dispatchable' };
+  }
+  const r = await sendProposal(task as TaskRow);
+  const { error } = await sb.from('task_proposals').update({ dispatch_status: r.status }).eq('task_id', task.task_id);
+  revalidatePath('/command/approvals');
+  if (error) return { ok: false, message: error.message };
+  return { ok: r.status === 'accepted_for_review', message: `${r.status.replace(/_/g, ' ')} · ${r.detail}` };
 }
 
 /* ── Account ── */
