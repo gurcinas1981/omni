@@ -11,7 +11,7 @@ import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { OMEGA_PATH } from '@/lib/brand/omega';
 import { foxShards, foxGoldMaterial } from '@/lib/brand/fox';
 import { SYMBOL_ATLAS, SYMBOL_BY_ID } from '@/lib/registry/symbols';
-import { ECO_CAM, LANES, SATELLITES, LOGO_TOP, OUTER, ecoPoint, ellipsePoints } from '@/lib/registry/ecosphere';
+import { ECO_CAM, HANDOFF_ORBIT_T, LANES, SATELLITES, orbitLine, orbitPoint } from '@/lib/registry/ecosphere';
 import { SEEN_KEY } from './openerGate';
 
 const DURATION = 9.2;
@@ -202,27 +202,17 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       shellMat = new THREE.PointsMaterial({ size: 0.05, color: 0x6ad6b2, map: dot, transparent: true, opacity: 0, depthWrite: false });
       eco.add(new THREE.Points(g, shellMat));
     }
-    const laneMats = LANES.map((_, k) => {
-      const m = new THREE.PointsMaterial({ size: 0.08, color: [0xd9b879, 0x6ad6b2, 0xb79cff][k], map: dot, transparent: true, opacity: 0, depthWrite: false });
-      eco.add(new THREE.Points(ellipsePoints(k), m));
+    // every globe on its own orbital plane (FOX Intelligence orbital language)
+    const laneMats = SATELLITES.map((sat) => {
+      const m = new THREE.LineBasicMaterial({ color: 0xcfe0ff, transparent: true, opacity: 0, depthWrite: false });
+      eco.add(new THREE.LineLoop(orbitLine(sat.orbit), m));
       return m;
     });
-    {
-      // outer library ring (as in the live view)
-      const n = 260;
-      const a = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) a.set([Math.cos((i / n) * Math.PI * 2) * OUTER.r, Math.sin((i / n) * Math.PI * 2) * OUTER.r, 0], i * 3);
-      const g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.BufferAttribute(a, 3));
-      const m = new THREE.PointsMaterial({ size: 0.09, color: 0xcfe6dc, map: dot, transparent: true, opacity: 0, depthWrite: false });
-      eco.add(new THREE.Points(g, m));
-      laneMats.push(m);
-    }
 
     const atlas = new THREE.TextureLoader().load(SYMBOL_ATLAS.src);
     atlas.colorSpace = THREE.SRGBColorSpace;
     atlas.anisotropy = 4;
-    type Sat = { sprite: THREE.Sprite; lane: number; phase: number; from: THREE.Vector3; delay: number; label: HTMLElement | null };
+    type Sat = { idx: number; sprite: THREE.Sprite; lane: number; phase: number; from: THREE.Vector3; delay: number; label: HTMLElement | null };
     const sats: Sat[] = SATELLITES.map(({ node, lane }, i) => {
       const sym = SYMBOL_BY_ID[node.symbol];
       const tex = atlas.clone();
@@ -236,6 +226,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       const phase = SATELLITES[i].phase;
       const ang = Math.random() * Math.PI * 2;
       return {
+        idx: i,
         sprite,
         lane,
         phase,
@@ -276,7 +267,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       // warp dust thins out as the ecosphere takes over
       (stars.material as THREE.PointsMaterial).opacity = 1 - ease((t - 4.8) / 2.2) * 0.88;
 
-      // FOX assembles at the centre (1.2 → 3.1s) and becomes the NEXUS core
+      // FOX shards assemble (the ecosystem signature), then burst outward as the Ω forms at the centre
       const a = ease((t - 1.2) / 1.9);
       fox.children.forEach((m, i) => {
         m.position.lerpVectors(starts[i], homes[i], a);
@@ -285,15 +276,23 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
         m.rotation.z *= 1 - a * 0.12;
         if (a >= 1) m.rotation.set(0, 0, 0);
       });
-      const settle = ease((t - 3.3) / 1.0);
-      fox.scale.setScalar(1.25 - settle * 0.2);
+      const burst = ease((t - 3.2) / 1.4);
+      fox.children.forEach((m, i) => {
+        if (burst <= 0) return;
+        const dir = new THREE.Vector3(i % 2 ? 1 : -1, i < 2 ? 1 : -1, 0.6).normalize();
+        m.position.addScaledVector(dir, burst * 9);
+        m.rotation.set(burst * 3 * (i + 1), burst * 2, burst * (i - 1.5));
+      });
+      foxMat.transparent = true;
+      foxMat.opacity = 1 - burst;
+      fox.scale.setScalar(1.25 + burst * 0.4);
       fox.rotation.y = Math.sin(t * 0.7) * 0.35 * (a >= 1 ? 1 : a);
 
-      // Ω rises out of the core and ascends to its place above the system (the OMNISYNAPSE logo)
+      // the Ω forms at the heart of the wire globe — OMNISYNAPSE at the centre of everything
       const o = ease((t - 3.3) / 1.6);
       omegaMat.opacity = Math.min(1, o * 2);
-      omega.position.set(0, o * (LOGO_TOP.eco.y + 1.55), 0.4);
-      omega.scale.setScalar(0.4 + o * 0.73);
+      omega.position.set(0, 0, 0);
+      omega.scale.setScalar(0.2 + o * 0.73);
       omega.rotation.y = (1 - o) * Math.PI * 1.5 + Math.sin(t * 0.6) * 0.15 * o;
       omegaMat.emissiveIntensity = 0.8 + Math.max(0, Math.sin((t - 4.4) * 2.4)) * 0.5 * o;
 
@@ -308,17 +307,18 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       // ecosphere: lanes draw, symbols fly in from the warp and lock into orbit
       eco.scale.setScalar(1);
       shellMat.opacity = ease((t - 3.6) / 1.4) * 0.35;
-      laneMats.forEach((m, k) => (m.opacity = ease((t - 3.4 - k * 0.2) / 1.0) * 0.7));
+      laneMats.forEach((m, k) => (m.opacity = ease((t - 3.6 - k * 0.08) / 1.0) * 0.2));
       for (const s of sats) {
-        const L = LANES[s.lane];
-        const ang = s.phase + Math.max(0, t - 3.7) * L.speed;
-        ecoPoint(s.lane, ang, tmp);
+        const O = SATELLITES[s.idx].orbit;
+        const ang = s.phase + Math.max(0, t - 3.7) * O.speed;
+        orbitPoint(O, ang, tmp);
+        const L = { r: O.r };
         const k = ease((t - 3.7 - s.delay) / 1.3);
         s.sprite.position.lerpVectors(s.from, tmp, k);
         // depth cue: satellites behind the Ω dim and shrink
         s.sprite.getWorldPosition(world);
         const depth = THREE.MathUtils.clamp((world.z + L.r) / (2 * L.r), 0, 1);
-        const sz = 1.6 * (0.7 + depth * 0.45);
+        const sz = 1.45 * (0.7 + depth * 0.45);
         s.sprite.scale.setScalar(Math.max(0.001, sz * k));
         const op = k * (0.35 + depth * 0.65);
         (s.sprite.material as THREE.SpriteMaterial).opacity = op;

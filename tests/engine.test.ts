@@ -8,6 +8,7 @@ import {
   scoreRecommendation,
   buildBrief,
   canTransition,
+  moonState,
   ValidationError,
   type Evidence,
   type Recommendation,
@@ -42,6 +43,23 @@ describe('ported python-runtime tests (5/5)', () => {
   });
   it('score is numeric', () => {
     expect(typeof scoreRecommendation(recs()[0])).toBe('number');
+  });
+});
+
+describe('ideas on spheres', () => {
+  it('accepts a sphere id and rejects malformed ones', () => {
+    const p = inbox('sample_recommendations.json');
+    p.records[0].sphere_id = 'scarab';
+    expect((parseIngestPayload(p).records[0] as Recommendation).sphere_id).toBe('scarab');
+    p.records[0].sphere_id = 'DROP TABLE';
+    expect(() => parseIngestPayload(p)).toThrow(/sphere_id/);
+  });
+  it('ideas multiply only once confirmed by the owner', () => {
+    expect(moonState('proposed')).toBe('pending');
+    expect(moonState('reviewed')).toBe('pending');
+    expect(moonState('approved')).toBe('confirmed');
+    expect(moonState('verified_complete')).toBe('confirmed');
+    expect(moonState('rejected')).toBe('retired');
   });
 });
 

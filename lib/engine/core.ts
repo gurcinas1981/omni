@@ -83,6 +83,8 @@ export interface Recommendation {
   demo: boolean;
   risk_tier?: RiskTier;
   council_cell?: string | null;
+  /** OMNI sphere (category node id) this idea belongs to — renders as a moon around that globe. */
+  sphere_id?: string | null;
 }
 
 export interface SystemRow {
@@ -161,6 +163,8 @@ export function validateRecommendation(obj: unknown): Recommendation {
   if (status !== 'proposed' && status !== 'reviewed') throw new ValidationError('Ingested recommendations must be proposed or reviewed');
   const risk = (o.risk_tier ?? 'R0') as string;
   if (!(RISK_TIERS as readonly string[]).includes(risk)) throw new ValidationError('Invalid risk tier');
+  const sphere = o.sphere_id ?? null;
+  if (sphere !== null && (typeof sphere !== 'string' || !/^[a-z0-9-]{1,64}$/.test(sphere))) throw new ValidationError('Invalid sphere_id');
   return {
     id: o.id as string,
     title: o.title as string,
@@ -175,6 +179,7 @@ export function validateRecommendation(obj: unknown): Recommendation {
     demo: o.demo === true,
     risk_tier: risk as RiskTier,
     council_cell: nonEmpty(o.council_cell) ? (o.council_cell as string) : null,
+    sphere_id: sphere as string | null,
   };
 }
 
@@ -303,4 +308,12 @@ export function canTransition(from: RecStatus, to: RecStatus, actor: { isHumanOw
   if (to === 'approved' && !actor.isHumanOwner) return { ok: false, reason: 'Only an authenticated human owner can approve' };
   if (to === 'approved' && risk === 'R4') return { ok: false, reason: 'R4 actions are not available in this service' };
   return { ok: true };
+}
+
+/** Idea moon state: pending ideas orbit hollow; once the owner confirms (approved onwards) they become solid. */
+export type MoonState = 'pending' | 'confirmed' | 'retired';
+export function moonState(status: RecStatus): MoonState {
+  if (status === 'proposed' || status === 'reviewed') return 'pending';
+  if (status === 'rejected' || status === 'failed' || status === 'rolled_back') return 'retired';
+  return 'confirmed';
 }

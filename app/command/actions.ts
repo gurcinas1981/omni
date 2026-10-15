@@ -2,6 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { supabaseServer, getOwner } from '@/lib/supabase/server';
+import { NODE_BY_ID } from '@/lib/registry/nodes';
 import { parseIngestPayload, canTransition, ValidationError, type RecStatus, type Recommendation, REC_STATUSES } from '@/lib/engine/core';
 
 export type ActionResult = { ok: boolean; message: string };
@@ -29,6 +30,19 @@ export async function transitionRecommendation(_: ActionResult | null, form: For
   if (error) return { ok: false, message: error.message };
   revalidatePath('/command', 'layout');
   return { ok: true, message: `Moved to ${to.replace('_', ' ')}` };
+}
+
+/* ── Assign an idea to an OMNI sphere (it orbits that globe as a moon) ── */
+export async function assignSphere(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  await requireOwner();
+  const id = str(form, 'id', 128);
+  const sphere = str(form, 'sphere_id', 64) || null;
+  if (sphere && !NODE_BY_ID[sphere]) return { ok: false, message: 'Unknown sphere' };
+  const sb = await supabaseServer();
+  const { error } = await sb.from('recommendations').update({ sphere_id: sphere }).eq('id', id);
+  if (error) return { ok: false, message: error.message };
+  revalidatePath('/command', 'layout');
+  return { ok: true, message: sphere ? `Assigned to ${NODE_BY_ID[sphere].label}` : 'Unassigned' };
 }
 
 /* ── Evidence / recommendation ingestion (JSON contract from agent-pack/schemas) ── */

@@ -288,3 +288,30 @@ a.btn, a.chip, a.cta { text-decoration: none; display: inline-flex; align-items:
 
 .plabel small { display: none; }
 .plabel.on small, .plabel.core small, .plabel:hover small { display: block; }
+
+/* ───────── FOX Intelligence orbital labels (title + subtitle beside each globe) ───────── */
+.plabel.side { margin-top: -15px; align-items: flex-start; border: 0; background: transparent; backdrop-filter: none; padding: 2px 4px; box-shadow: none; transform-origin: left center; }
+.plabel.side b { font: 400 10.5px var(--display); letter-spacing: .16em; color: #eef3f8; text-shadow: 0 0 10px rgba(0,0,0,.9); }
+.plabel.side small { display: block; font: 400 9.5px var(--mono); letter-spacing: .08em; color: var(--c); opacity: .85; text-shadow: 0 0 8px rgba(0,0,0,.9); }
+.plabel.side:hover, .plabel.side.on { box-shadow: none; transform: scale(1.08); }
+.plabel.side.on b { color: var(--c); }
+.plabel .moons i { font-style: normal; }
+.plabel .m-pending { color: #8fe9ff; }
+.plabel .m-conf { color: #f2cf7e; }
+@media (max-width: 760px) { .plabel.side small { display: none; } .plabel.side.on small { display: block; } .plabel.side b { font-size: 8px; } }
+
+/* FOX-site corner title + motto */
+.eco-title { position: absolute; left: 24px; bottom: 44px; z-index: 2; pointer-events: none; font: 400 clamp(22px, 3.4vw, 46px) var(--display); letter-spacing: .14em; color: #eef3f8; text-shadow: 0 0 30px rgba(0,0,0,.8); }
+.eco-title small { display: block; margin-top: 6px; font: 400 10.5px var(--mono); letter-spacing: .3em; color: var(--gold-hi, #d9b879); }
+.eco-motto { position: absolute; right: 24px; bottom: 44px; z-index: 2; pointer-events: none; max-width: 300px; text-align: right; font: 300 12px var(--sans); letter-spacing: .1em; color: #9fb4c8; }
+@media (max-width: 900px) { .eco-title, .eco-motto { display: none; } }
+
+/* Ideas on a sphere (info panel) */
+.ideas { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+.ideas h4 { margin: 0 0 6px; font: 400 10px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.ideas ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.ideas li { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; }
+.ideas li .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; transform: translateY(1px); }
+.ideas li .dot.pending { border: 2px solid #8fe9ff; }
+.ideas li .dot.confirmed { background: #f2cf7e; box-shadow: 0 0 8px #f2cf7e; }
+.ideas .hint { font-size: 12px; color: var(--muted); }

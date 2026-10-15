@@ -8,6 +8,7 @@ import { FoxMark, OmegaMark } from './Marks';
 import { shouldPlayOpener } from './openerGate';
 import SymbolIcon from './SymbolIcon';
 import { SYMBOL_BY_ID } from '@/lib/registry/symbols';
+import { useIdeas } from '@/lib/ideas';
 
 const Ecosphere = dynamic(() => import('@/components/scene/Ecosphere'), { ssr: false });
 type View = 'ecosphere' | 'plan';
@@ -67,6 +68,7 @@ export default function UniverseExperience() {
   const lowPower = useUniverse((s) => s.lowPower);
   const panelRef = useRef<HTMLDivElement>(null);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
+  const ideas = useIdeas();
 
   useEffect(() => {
     setWebgl(hasWebGL());
@@ -229,7 +231,18 @@ export default function UniverseExperience() {
             {v === 'ecosphere' ? 'Ecosphere' : 'Plan'}
           </button>
         ))}
+        <span className="vs-hint hide-sm">{selected ? 'Esc · back to the Ω' : 'Select a globe to bring it to the centre'}</span>
       </div>
+
+      {!node && (
+        <>
+          <h1 className="eco-title">
+            OMNISYNAPSE
+            <small>Ω · SUPERVISORY INTELLIGENCE</small>
+          </h1>
+          <p className="eco-motto">Every idea finds its sphere. Confirmed ideas multiply into moons.</p>
+        </>
+      )}
 
       {/* Accessible navigation rail */}
       <nav className="rail" aria-label="Cognitive universe navigation">
@@ -300,6 +313,27 @@ export default function UniverseExperience() {
               ))}
             </ol>
           )}
+          <section className="ideas" aria-label="Ideas on this sphere">
+            <h4>Ideas on this sphere</h4>
+            {!ideas.signedIn ? (
+              <p className="hint">
+                <Link href="/login">Sign in</Link> to see ideas assigned here. Pending ideas orbit as hollow rings; once you confirm them they become gold moons.
+              </p>
+            ) : (ideas.bySphere[node.id] ?? []).length === 0 ? (
+              <p className="hint">No ideas assigned yet. Assign one from <Link href="/command/approvals">Approvals</Link>.</p>
+            ) : (
+              <ul>
+                {(ideas.bySphere[node.id] ?? []).map((i) => (
+                  <li key={i.id}>
+                    <span className={`dot ${i.state}`} aria-hidden />
+                    <span>
+                      {i.title} <small className="muted">· {i.state === 'confirmed' ? 'confirmed' : 'awaiting your review'}</small>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
           {node.command && (
             <Link className="cta" href={node.command.href}>
               {node.command.label} <span aria-hidden>⟶</span>

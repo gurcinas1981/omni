@@ -3,7 +3,8 @@ import { loadCore, loadTasks, fmtDate } from '@/lib/data';
 import { scoreRecommendation, TRANSITIONS, SCORE_FIELDS, TRUSTED, type RecStatus } from '@/lib/engine/core';
 import { SCORING, COUNCIL } from '@/lib/registry/council';
 import ActionForm from '@/components/command/ActionForm';
-import { transitionRecommendation, proposeNexusTask } from '../actions';
+import { transitionRecommendation, proposeNexusTask, assignSphere } from '../actions';
+import { NODES, NODE_BY_ID } from '@/lib/registry/nodes';
 
 const LABEL: Partial<Record<RecStatus, string>> = {
   reviewed: 'Mark reviewed',
@@ -64,6 +65,7 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
                   {r.demo && <span className="pill pill-demo">DEMO</span>}
                   {!trusted && <span className="pill pill-warn">No trusted source — cannot enter brief</span>}
                   <span className="pill">{cell(r.council_cell)}</span>
+                  <span className="pill pill-cyan">◯ {r.sphere_id ? NODE_BY_ID[r.sphere_id]?.label ?? r.sphere_id : 'No sphere'}</span>
                 </div>
                 <span className="small muted">Relative score {score.toFixed(0)} · updated {fmtDate(r.updated_at)}</span>
               </div>
@@ -115,6 +117,17 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
                   {r.approval_note && <p className="notice">Note: {r.approval_note}</p>}
                 </div>
               </div>
+              <ActionForm action={assignSphere} submit="Assign sphere" variant="btn btn-ghost" className="inline-form">
+                <input type="hidden" name="id" value={r.id} />
+                <select name="sphere_id" defaultValue={r.sphere_id ?? ''} aria-label="OMNI sphere" className="note-input">
+                  <option value="">— No sphere —</option>
+                  {NODES.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.label}
+                    </option>
+                  ))}
+                </select>
+              </ActionForm>
               {TRANSITIONS[r.status].length > 0 && (
                 <div className="row" style={{ marginTop: 14, alignItems: 'flex-start' }}>
                   {TRANSITIONS[r.status].map((to) => (
