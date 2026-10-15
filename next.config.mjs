@@ -10,6 +10,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   transpilePackages: ['three'],
+  async rewrites() {
+    return [{ source: '/.well-known/fox-component.json', destination: '/api/manifest' }];
+  },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },

@@ -17,6 +17,7 @@ export const ORBIT_SITE_TO_SYSTEM: Record<string, string> = {
   'fox-atlas': 'fox-atlas',
   passport: 'fox-land-passport',
   pilot: 'fox-land-passport',
+  omni: 'fox-omnisynapse',
 };
 export const VERCEL_PROJECT_TO_SYSTEM: Record<string, string> = {
   'fox-orbit': 'fox-orbit',
@@ -28,6 +29,7 @@ export const VERCEL_PROJECT_TO_SYSTEM: Record<string, string> = {
   'fox-atlas': 'fox-atlas',
   'land-passport': 'fox-land-passport',
   'land-passport-derby': 'fox-land-passport',
+  omni: 'fox-omnisynapse',
 };
 
 export interface OrbitEventRow {
