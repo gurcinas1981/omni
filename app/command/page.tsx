@@ -36,19 +36,19 @@ export default async function BriefPage({ searchParams }: { searchParams: Promis
       {error && <p className="error">Data error: {error}</p>}
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <div className="card">
+        <div className="card" data-explain="stat-trusted">
           <div className="stat">{trusted}</div>
           <div className="stat-label">Trusted evidence records</div>
         </div>
-        <div className="card">
+        <div className="card" data-explain="stat-awaiting">
           <div className="stat">{awaiting}</div>
           <div className="stat-label">Proposals awaiting your review</div>
         </div>
-        <div className="card">
+        <div className="card" data-explain="stat-approved">
           <div className="stat">{approved}</div>
           <div className="stat-label">Human-approved, not yet dispatched</div>
         </div>
-        <div className="card">
+        <div className="card" data-explain="stat-systems">
           <div className="stat">
             {verified}/{systems.length}
           </div>

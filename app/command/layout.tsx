@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getOwner } from '@/lib/supabase/server';
-import { OmegaMark, FoxMark } from '@/components/ui/Marks';
+import { OmegaMark } from '@/components/ui/Marks';
 import SideNav from '@/components/command/SideNav';
 
 export const metadata: Metadata = { title: 'Command layer', robots: { index: false, follow: false } };
@@ -18,9 +18,7 @@ export default async function CommandLayout({ children }: { children: React.Reac
           <OmegaMark size={30} />
           <span className="brand-text">
             <span className="brand-name" style={{ fontSize: 18 }}>OMNISYNAPSE</span>
-            <span className="brand-sub">
-              <FoxMark size={11} /> command layer
-            </span>
+            <span className="brand-sub">FOX Intelligence · command layer</span>
           </span>
         </Link>
         <SideNav />

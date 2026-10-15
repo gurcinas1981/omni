@@ -62,31 +62,14 @@ export default function UniverseExperience() {
   const view = useUniverse((s) => s.viewMode);
   const setView = (v: View) => setState({ viewMode: v });
   const selected = useUniverse((s) => s.selected);
-  const hovered = useUniverse((s) => s.hovered);
   const introDone = useUniverse((s) => s.introDone);
   const reducedMotion = useUniverse((s) => s.reducedMotion);
   const lowPower = useUniverse((s) => s.lowPower);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
   const ideas = useIdeas();
-  const theme = useUniverse((s) => s.theme);
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-  const toggleTheme = () => {
-    const next = getState().theme === 'dark' ? 'light' : 'dark';
-    setState({ theme: next });
-    try {
-      localStorage.setItem('omni-theme', next);
-    } catch {}
-  };
 
   useEffect(() => {
     setWebgl(hasWebGL());
-    try {
-      const qt = new URLSearchParams(window.location.search).get('theme') ?? localStorage.getItem('omni-theme');
-      if (qt === 'light' || qt === 'dark') setState({ theme: qt });
-    } catch {}
     try {
       const qv = new URLSearchParams(window.location.search).get('view');
       if (qv === 'plan' || qv === 'ecosphere') setState({ viewMode: qv });
@@ -112,7 +95,6 @@ export default function UniverseExperience() {
   }, []);
 
   const node = selected ? NODE_BY_ID[selected] : null;
-  const hoverNodeData = hovered && hovered !== selected ? NODE_BY_ID[hovered] : null;
 
   useEffect(() => {
     if (node) panelRef.current?.focus({ preventScroll: true });
@@ -134,7 +116,6 @@ export default function UniverseExperience() {
       else if (e.key === 'ArrowRight' || e.key === ']') cycle(1);
       else if (e.key === 'ArrowLeft' || e.key === '[') cycle(-1);
       else if (e.key === 'm' || e.key === 'M') toggleMotion();
-      else if (e.key === 't' || e.key === 'T') toggleTheme();
       else if (e.key === ' ' && !getState().introDone) {
         e.preventDefault();
         skipIntro();
@@ -143,12 +124,9 @@ export default function UniverseExperience() {
         if (hk && !e.metaKey && !e.ctrlKey) selectNode(hk.id);
       }
     };
-    const onMove = (e: PointerEvent) => setTip({ x: e.clientX, y: e.clientY });
     window.addEventListener('keydown', onKey);
-    window.addEventListener('pointermove', onMove);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('pointermove', onMove);
     };
   }, [cycle]);
 
@@ -167,10 +145,10 @@ export default function UniverseExperience() {
 
   const groups = useMemo(
     () => [
-      { title: 'Core', items: NODES.filter((n) => n.kind === 'core' || n.kind === 'gateway' || n.kind === 'altar') },
-      { title: 'Human domains', items: NODES.filter((n) => n.kind === 'symbol' && n.side === 'left') },
-      { title: 'Synthetic domains', items: NODES.filter((n) => n.kind === 'symbol' && n.side === 'right') },
-      { title: 'Guardians', items: NODES.filter((n) => n.kind === 'guardian') },
+      { title: 'Core', explain: 'rail-core', items: NODES.filter((n) => n.kind === 'core' || n.kind === 'gateway' || n.kind === 'altar') },
+      { title: 'Human domains', explain: 'rail-human', items: NODES.filter((n) => n.kind === 'symbol' && n.side === 'left') },
+      { title: 'Synthetic domains', explain: 'rail-synthetic', items: NODES.filter((n) => n.kind === 'symbol' && n.side === 'right') },
+      { title: 'Guardians', explain: 'rail-guardians', items: NODES.filter((n) => n.kind === 'guardian') },
     ],
     [],
   );
@@ -185,7 +163,7 @@ export default function UniverseExperience() {
           }}
         />
       )}
-      <div className="stage" aria-hidden={webgl === false}>
+      <div className="stage" data-explain="stage" aria-hidden={webgl === false}>
         {webgl === true && <Ecosphere />}
         {webgl === false && (
           <div className="poster" role="img" aria-label="OMNISYNAPSE temple — static view (WebGL unavailable)" />
@@ -194,27 +172,21 @@ export default function UniverseExperience() {
 
       {/* Top bar */}
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="OMNISYNAPSE home" onClick={() => selectNode(null)}>
+        <Link href="/" className="brand" aria-label="OMNISYNAPSE home" data-explain="brand" onClick={() => selectNode(null)}>
           <OmegaMark size={34} />
           <span className="brand-text">
             <span className="brand-name">OMNISYNAPSE</span>
-            <span className="brand-sub">
-              <FoxMark size={12} /> FOX Intelligence · supervisory layer
-            </span>
+            <span className="brand-sub">FOX Intelligence · supervisory layer</span>
           </span>
         </Link>
         <nav className="top-actions" aria-label="View controls">
-          <button className="chip" onClick={() => selectNode(null)} title="Reset view (R)">
+          <button className="chip" data-explain="reset" onClick={() => selectNode(null)}>
             Reset
           </button>
-          <button className="chip theme-chip" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title="Theme (T)">
-            <span className={theme === 'dark' ? 'on' : ''}>Dark</span>
-            <span className={theme === 'light' ? 'on' : ''}>Light</span>
-          </button>
-          <button className="chip hide-sm" onClick={toggleFullscreen} title="Fullscreen">
+          <button className="chip hide-sm" data-explain="fullscreen" onClick={toggleFullscreen}>
             Fullscreen
           </button>
-          <Link href="/command" className="chip chip-gold">
+          <Link href="/command" className="chip chip-gold" data-explain="command">
             Command ⟶
           </Link>
         </nav>
@@ -225,6 +197,7 @@ export default function UniverseExperience() {
         {(['ecosphere', 'plan'] as View[]).map((v) => (
           <button
             key={v}
+            data-explain={v === 'ecosphere' ? 'view-ecosphere' : 'view-plan'}
             className={view === v ? 'on' : ''}
             aria-pressed={view === v}
             onClick={() => {
@@ -243,11 +216,11 @@ export default function UniverseExperience() {
 
       {!node && (
         <>
-          <h1 className="eco-title">
+          <h1 className="eco-title" data-explain="eco-title">
             OMNISYNAPSE
             <small>Ω · SUPERVISORY INTELLIGENCE</small>
           </h1>
-          <p className="eco-motto">Every idea finds its sphere. Confirmed ideas multiply into moons.</p>
+          <p className="eco-motto" data-explain="eco-motto">Every idea finds its sphere. Confirmed ideas multiply into moons.</p>
         </>
       )}
 
@@ -255,12 +228,13 @@ export default function UniverseExperience() {
       <nav className="rail" aria-label="Cognitive universe navigation">
         {groups.map((g) => (
           <div key={g.title} className="rail-group">
-            <p className="rail-title">{g.title}</p>
+            <p className="rail-title" data-explain={g.explain}>{g.title}</p>
             <ul>
               {g.items.map((n) => (
                 <li key={n.id}>
                   <button
                     className={`rail-item ${selected === n.id ? 'on' : ''}`}
+                    data-explain={`node:${n.id}`}
                     aria-current={selected === n.id}
                     onClick={() => {
                       if (!getState().introDone) skipIntro();
@@ -271,7 +245,7 @@ export default function UniverseExperience() {
                     onFocus={() => hoverNode(n.id)}
                     onBlur={() => hoverNode(null)}
                   >
-                    <SymbolIcon id={n.symbol} size={18} color={n.accent} />
+                    {n.symbol === 'fox' ? <FoxMark size={18} className="rail-fox" /> : <SymbolIcon id={n.symbol} size={18} color={n.accent} />}
                     {n.label}
                   </button>
                 </li>
@@ -281,32 +255,25 @@ export default function UniverseExperience() {
         ))}
       </nav>
 
-      {/* Hover tooltip */}
-      {hoverNodeData && tip && (
-        <div className="tooltip" style={{ left: tip.x + 16, top: tip.y + 12 }} role="presentation">
-          <strong>{hoverNodeData.label}</strong>
-          <span>{hoverNodeData.domain}</span>
-        </div>
-      )}
 
       {/* Info panel */}
       {node && (
         <aside className="panel" ref={panelRef} tabIndex={-1} aria-labelledby="panel-title">
           <div className="panel-top">
-            <button className="panel-arrow" onClick={() => cycle(-1)} aria-label="Previous sphere (←)">
+            <button className="panel-arrow" data-explain="panel-prev" onClick={() => cycle(-1)} aria-label="Previous sphere">
               ←<span>Prev</span>
             </button>
-            <button className="panel-arrow" onClick={() => cycle(1)} aria-label="Next sphere (→)">
+            <button className="panel-arrow" data-explain="panel-next" onClick={() => cycle(1)} aria-label="Next sphere">
               <span>Next</span>→
             </button>
-            <button className="panel-close" onClick={() => selectNode(null)} aria-label="Close panel (Escape)">
+            <button className="panel-close" data-explain="panel-close" onClick={() => selectNode(null)} aria-label="Close panel">
               ×
             </button>
           </div>
           <p className="panel-kicker">{node.kind === 'symbol' ? `${node.side === 'left' ? 'Human' : 'Synthetic'} domain` : node.kind}</p>
           <div className="panel-head">
-            <span className="panel-sym">
-              <SymbolIcon id={node.symbol} size={46} color={node.accent} />
+            <span className="panel-sym" data-explain="panel-symbol">
+              {node.symbol === 'fox' ? <FoxMark size={42} /> : <SymbolIcon id={node.symbol} size={46} color={node.accent} />}
             </span>
             <div>
               <h2 id="panel-title">{node.label}</h2>
@@ -328,7 +295,7 @@ export default function UniverseExperience() {
               ))}
             </ol>
           )}
-          <section className="ideas" aria-label="Ideas on this sphere">
+          <section className="ideas" aria-label="Ideas on this sphere" data-explain="panel-ideas">
             <h4>Ideas on this sphere</h4>
             {!ideas.signedIn ? (
               <p className="hint">
@@ -350,12 +317,12 @@ export default function UniverseExperience() {
             )}
           </section>
           {node.command && (
-            <Link className="cta" href={node.command.href}>
+            <Link className="cta" data-explain="panel-cta" href={node.command.href}>
               {node.command.label} <span aria-hidden>⟶</span>
               <small>Owner sign-in required</small>
             </Link>
           )}
-          <h3 className="panel-sub">Mapped FOX platforms</h3>
+          <h3 className="panel-sub" data-explain="panel-tools">Mapped FOX platforms</h3>
           <ul className="tools">
             {node.tools.map((t) => (
               <ToolRow key={t} tool={FOX_TOOLS[t]} />
@@ -365,11 +332,11 @@ export default function UniverseExperience() {
       )}
 
       <footer className="statusline">
-        <span>
+        <span data-explain="status-integrations">
           <i className="led led-off" /> Live integrations: none verified · ORBIT &amp; NEXUS unconnected
         </span>
-        <span className="hide-sm">
-          {lowPower ? 'Low-power rendering' : 'Full rendering'} · ← → browse · R reset · T theme · Esc close
+        <span className="hide-sm" data-explain="status-keys">
+          {lowPower ? 'Low-power rendering' : 'Full rendering'} · ← → browse · R reset · Esc close
         </span>
       </footer>
     </div>

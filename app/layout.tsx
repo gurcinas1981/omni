@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import ExplainLayer from '@/components/ui/ExplainLayer';
 
 const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://omni.foxintelligence.co.uk';
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: { title: 'OMNISYNAPSE Ω', description: 'The supervisory mind of the FOX Intelligence ecosystem.', images: ['/og.jpg'], siteName: 'FOX Intelligence' },
 };
 
-export const viewport: Viewport = { themeColor: '#05080d', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
+export const viewport: Viewport = { themeColor: '#030a1d', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Michroma&family=Space+Mono:wght@400;700&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ExplainLayer />
+      </body>
     </html>
   );
 }

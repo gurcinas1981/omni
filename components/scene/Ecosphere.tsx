@@ -747,8 +747,7 @@ function ClearColour({ P }: { P: Palette }) {
 
 export default function Ecosphere() {
   const lowPower = useUniverse((s) => s.lowPower);
-  const theme = useUniverse((s) => s.theme);
-  const P = PALETTES[theme];
+  const P = PALETTES.dark; // FOX brand: dark navy only
   const controls = useRef<OrbitControlsImpl | null>(null);
   useEffect(() => {
     setState({ introDone: true, phase: getState().selected ? 'NODE_FOCUSED' : 'TEMPLE_IDLE' });
@@ -771,7 +770,7 @@ export default function Ecosphere() {
       <Motion />
       <ClearColour P={P} />
       <Suspense fallback={null}>
-        <Scene key={theme} P={P} />
+        <Scene P={P} />
       </Suspense>
       <OrbitControls ref={controls} makeDefault enablePan={false} enableDamping dampingFactor={0.08} minDistance={5} maxDistance={90} target={ECO_CAM.target} rotateSpeed={0.55} zoomSpeed={0.7} />
       <Rig controls={controls} />
