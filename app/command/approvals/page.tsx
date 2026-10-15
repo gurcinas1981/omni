@@ -123,12 +123,13 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
                       action={transitionRecommendation}
                       submit={LABEL[to] ?? to}
                       variant={VARIANT[to] ?? 'btn btn-ghost'}
+                      className="inline-form"
                       confirm={to === 'approved' ? `Approve “${r.title}”? This records your authority (risk ${r.risk_tier}).` : undefined}
                     >
                       <input type="hidden" name="id" value={r.id} />
                       <input type="hidden" name="to" value={to} />
                       {(to === 'approved' || to === 'rejected') && (
-                        <input name="note" placeholder="Decision note (optional)" maxLength={1000} className="field" style={{ margin: 0, padding: 8, borderRadius: 8, background: 'rgba(0,0,0,.3)', border: '1px solid rgba(255,255,255,.12)', color: 'inherit', minWidth: 220 }} />
+                        <input name="note" placeholder={to === 'approved' ? 'Approval note (optional)' : 'Reason (optional)'} maxLength={1000} className="note-input" aria-label="Decision note" />
                       )}
                     </ActionForm>
                   ))}

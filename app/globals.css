@@ -147,7 +147,7 @@ button { font: inherit; }
 .notice { font-size: 12.5px; color: var(--muted); border-left: 2px solid var(--gold); padding: 6px 10px; background: rgba(200,169,106,.06); border-radius: 0 8px 8px 0; }
 
 /* ───────── Command layer ───────── */
-.cmd { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; background:
+.cmd { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; background:
   radial-gradient(900px 500px at 80% -10%, rgba(53,217,245,.06), transparent), radial-gradient(800px 500px at 0% 0%, rgba(200,169,106,.07), transparent), var(--night); }
 .side { position: sticky; top: 0; height: 100vh; border-right: 1px solid rgba(200,169,106,.14); padding: 18px 14px; display: flex; flex-direction: column; gap: 14px; background: rgba(5,9,8,.6); }
 .side nav { display: grid; gap: 2px; }
@@ -200,7 +200,8 @@ details.skill pre { white-space: pre-wrap; font-size: 12px; color: #cfd6d9; max-
 .hier .lvl strong { color: var(--gold-hi); }
 @media (max-width: 1100px) { .g4 { grid-template-columns: repeat(2, minmax(0,1fr)); } .g3 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 820px) {
-  .cmd { grid-template-columns: 1fr; }
+  .cmd { grid-template-columns: minmax(0, 1fr); }
+  details.skill summary { flex-wrap: wrap; }
   .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 10px 12px; }
   .side nav { display: flex; overflow-x: auto; gap: 4px; width: 100%; }
   .side a.nav { white-space: nowrap; }
@@ -209,3 +210,8 @@ details.skill pre { white-space: pre-wrap; font-size: 12px; color: #cfd6d9; max-
   .g2, .g3, .g4 { grid-template-columns: 1fr; }
   .table { display: block; overflow-x: auto; }
 }
+a.btn, a.chip, a.cta { text-decoration: none; display: inline-flex; align-items: center; }
+.inline-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.inline-form > .row { margin-top: 0 !important; }
+.note-input { padding: 9px 10px; border-radius: 9px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.12); color: inherit; min-width: 220px; font: inherit; font-size: 13px; }
+.grid.g2 > .grid { align-content: start; }
