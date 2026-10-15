@@ -9,9 +9,8 @@ import { shouldPlayOpener } from './openerGate';
 import SymbolIcon from './SymbolIcon';
 import { SYMBOL_BY_ID } from '@/lib/registry/symbols';
 
-const Universe = dynamic(() => import('@/components/scene/Universe'), { ssr: false });
 const Ecosphere = dynamic(() => import('@/components/scene/Ecosphere'), { ssr: false });
-type View = 'ecosphere' | 'temple';
+type View = 'ecosphere' | 'plan';
 const OmniOpener = dynamic(() => import('./OmniOpener'), { ssr: false });
 
 function hasWebGL() {
@@ -59,7 +58,8 @@ function ToolRow({ tool }: { tool: FoxTool }) {
 export default function UniverseExperience() {
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [opener, setOpener] = useState(false);
-  const [view, setView] = useState<View>('ecosphere');
+  const view = useUniverse((s) => s.viewMode);
+  const setView = (v: View) => setState({ viewMode: v });
   const selected = useUniverse((s) => s.selected);
   const hovered = useUniverse((s) => s.hovered);
   const introDone = useUniverse((s) => s.introDone);
@@ -71,7 +71,9 @@ export default function UniverseExperience() {
   useEffect(() => {
     setWebgl(hasWebGL());
     try {
-      if (localStorage.getItem('omni-view') === 'temple') setView('temple');
+      const qv = new URLSearchParams(window.location.search).get('view');
+      if (qv === 'plan' || qv === 'ecosphere') setState({ viewMode: qv });
+      else if (localStorage.getItem('omni-view') === 'plan') setState({ viewMode: 'plan' });
     } catch {}
     if (shouldPlayOpener()) {
       setOpener(true);
@@ -166,7 +168,7 @@ export default function UniverseExperience() {
         />
       )}
       <div className="stage" aria-hidden={webgl === false}>
-        {webgl === true && (view === 'ecosphere' ? <Ecosphere /> : <Universe />)}
+        {webgl === true && <Ecosphere />}
         {webgl === false && (
           <div className="poster" role="img" aria-label="OMNISYNAPSE temple — static view (WebGL unavailable)" />
         )}
@@ -184,24 +186,6 @@ export default function UniverseExperience() {
           </span>
         </Link>
         <nav className="top-actions" aria-label="View controls">
-          <div className="seg" role="group" aria-label="View">
-            {(['ecosphere', 'temple'] as View[]).map((v) => (
-              <button
-                key={v}
-                className={`chip ${view === v ? 'chip-on' : ''}`}
-                aria-pressed={view === v}
-                onClick={() => {
-                  selectNode(null);
-                  setView(v);
-                  try {
-                    localStorage.setItem('omni-view', v);
-                  } catch {}
-                }}
-              >
-                {v === 'ecosphere' ? 'Ecosphere' : 'Temple'}
-              </button>
-            ))}
-          </div>
           <button className="chip" onClick={() => selectNode(null)} title="Reset view (R)">
             Reset
           </button>
@@ -227,23 +211,25 @@ export default function UniverseExperience() {
         </nav>
       </header>
 
-      {/* Intro title + skip */}
-      {!introDone && !opener && (
-        <div className="intro" role="status">
-          <p className="intro-motto">One Mind. Infinite Connections. Continuous Evolution.</p>
-          <button className="chip" onClick={skipIntro}>
-            Skip intro
+      {/* View switch — ORBIT style */}
+      <div className="viewswitch" role="group" aria-label="Layout">
+        {(['ecosphere', 'plan'] as View[]).map((v) => (
+          <button
+            key={v}
+            className={view === v ? 'on' : ''}
+            aria-pressed={view === v}
+            onClick={() => {
+              selectNode(null);
+              setView(v);
+              try {
+                localStorage.setItem('omni-view', v);
+              } catch {}
+            }}
+          >
+            {v === 'ecosphere' ? 'Ecosphere' : 'Plan'}
           </button>
-        </div>
-      )}
-      {introDone && !node && view === 'temple' && (
-        <div className="hero" aria-hidden="true">
-          <p className="hero-title">
-            OMNISYNAPSE <span>Ω</span>
-          </p>
-          <p>The supervisory mind of the FOX ecosystem — select any symbol to explore.</p>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Accessible navigation rail */}
       <nav className="rail" aria-label="Cognitive universe navigation">

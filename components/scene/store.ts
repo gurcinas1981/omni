@@ -15,6 +15,8 @@ export interface UniverseState {
   introDone: boolean;
   /** True while the full-screen opener plays; the temple intro waits for it. */
   openerActive: boolean;
+  /** Ecosphere (3D atom) or Plan (top-down) layout. */
+  viewMode: 'ecosphere' | 'plan';
 }
 
 let state: UniverseState = {
@@ -23,8 +25,9 @@ let state: UniverseState = {
   selected: null,
   reducedMotion: false,
   lowPower: false,
-  introDone: false,
+  introDone: true,
   openerActive: false,
+  viewMode: 'ecosphere',
 };
 const listeners = new Set<() => void>();
 

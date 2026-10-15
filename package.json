@@ -2,7 +2,7 @@
   "name": "omnisynapse",
   "version": "1.0.0",
   "private": true,
-  "description": "OMNISYNAPSE \u03a9 \u2014 private supervisory intelligence service for FOX Intelligence",
+  "description": "OMNISYNAPSE Ω — private supervisory intelligence service for FOX Intelligence",
   "scripts": {
     "prebuild": "node scripts/build-skills.mjs",
     "predev": "node scripts/build-skills.mjs",
@@ -31,10 +31,12 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@fontsource/michroma": "^5.3.0",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
+    "opentype.js": "^2.0.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.4"
   }

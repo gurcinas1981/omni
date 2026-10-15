@@ -11,7 +11,7 @@ import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { OMEGA_PATH } from '@/lib/brand/omega';
 import { foxShards, foxGoldMaterial } from '@/lib/brand/fox';
 import { SYMBOL_ATLAS, SYMBOL_BY_ID } from '@/lib/registry/symbols';
-import { LANES, SATELLITES, orbitBasis, dottedCircle } from '@/lib/registry/ecosphere';
+import { ECO_CAM, LANES, SATELLITES, LOGO_TOP, OUTER, ecoPoint, ellipsePoints } from '@/lib/registry/ecosphere';
 import { SEEN_KEY } from './openerGate';
 
 const DURATION = 9.2;
@@ -96,7 +96,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x020605);
-    scene.fog = new THREE.Fog(0x020605, 10, 28);
+    scene.fog = new THREE.Fog(0x020605, 36, 120);
     const cam = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
     cam.position.set(0, 0, 9);
     let portrait = false;
@@ -106,7 +106,7 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       portrait = w < h;
       renderer.setSize(w, h, false);
       cam.aspect = w / h;
-      cam.fov = portrait ? 78 : 55;
+      cam.fov = 46;
       cam.updateProjectionMatrix();
     };
     size();
@@ -176,9 +176,9 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
     // ── mind-sphere: gold wire + cyan synapse points + halo
     const mind = new THREE.Group();
     scene.add(mind);
-    const wire = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(2.6, 3)), new THREE.LineBasicMaterial({ color: 0xd9b879, transparent: true, opacity: 0 }));
+    const wire = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(2.25, 3)), new THREE.LineBasicMaterial({ color: 0xd9b879, transparent: true, opacity: 0 }));
     mind.add(wire);
-    const nodes = new THREE.Points(new THREE.IcosahedronGeometry(2.72, 4), new THREE.PointsMaterial({ size: 0.07, color: 0x7fe6ff, map: dot, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const nodes = new THREE.Points(new THREE.IcosahedronGeometry(2.36, 4), new THREE.PointsMaterial({ size: 0.08, color: 0xf4dea6, map: dot, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
     mind.add(nodes);
     const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(255,214,140,.9)'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, fog: false }));
     halo.scale.setScalar(10);
@@ -186,7 +186,6 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
 
     // ── ecosphere: dotted outer shell + three tilted orbital lanes carrying the symbol library
     const eco = new THREE.Group();
-    eco.rotation.x = 0.22;
     scene.add(eco);
     let shellMat: THREE.PointsMaterial;
     {
@@ -196,19 +195,29 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       for (let i = 0; i < n; i++) {
         const y = 1 - (i / (n - 1)) * 2;
         const r = Math.sqrt(1 - y * y);
-        a.set([Math.cos(ga * i) * r * 8.2, y * 8.2, Math.sin(ga * i) * r * 8.2], i * 3);
+        a.set([Math.cos(ga * i) * r * 19, y * 19, Math.sin(ga * i) * r * 19], i * 3);
       }
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(a, 3));
       shellMat = new THREE.PointsMaterial({ size: 0.05, color: 0x6ad6b2, map: dot, transparent: true, opacity: 0, depthWrite: false });
       eco.add(new THREE.Points(g, shellMat));
     }
-    const laneBases = LANES.map((L) => orbitBasis(L.incl, L.node));
-    const laneMats = LANES.map((L, k) => {
-      const m = new THREE.PointsMaterial({ size: 0.06, color: k === 1 ? 0x6ad6b2 : 0xd9b879, map: dot, transparent: true, opacity: 0, depthWrite: false });
-      eco.add(new THREE.Points(dottedCircle(L.r, 220, laneBases[k].u, laneBases[k].v), m));
+    const laneMats = LANES.map((_, k) => {
+      const m = new THREE.PointsMaterial({ size: 0.08, color: [0xd9b879, 0x6ad6b2, 0xb79cff][k], map: dot, transparent: true, opacity: 0, depthWrite: false });
+      eco.add(new THREE.Points(ellipsePoints(k), m));
       return m;
     });
+    {
+      // outer library ring (as in the live view)
+      const n = 260;
+      const a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) a.set([Math.cos((i / n) * Math.PI * 2) * OUTER.r, Math.sin((i / n) * Math.PI * 2) * OUTER.r, 0], i * 3);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(a, 3));
+      const m = new THREE.PointsMaterial({ size: 0.09, color: 0xcfe6dc, map: dot, transparent: true, opacity: 0, depthWrite: false });
+      eco.add(new THREE.Points(g, m));
+      laneMats.push(m);
+    }
 
     const atlas = new THREE.TextureLoader().load(SYMBOL_ATLAS.src);
     atlas.colorSpace = THREE.SRGBColorSpace;
@@ -264,8 +273,10 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       }
       p.needsUpdate = true;
       (stars.material as THREE.PointsMaterial).size = t < 2 ? 0.5 + t * 0.4 : 1.1;
+      // warp dust thins out as the ecosphere takes over
+      (stars.material as THREE.PointsMaterial).opacity = 1 - ease((t - 4.8) / 2.2) * 0.88;
 
-      // FOX assembles at centre (1.2 → 3.1s), then descends to sit beneath the Ω
+      // FOX assembles at the centre (1.2 → 3.1s) and becomes the NEXUS core
       const a = ease((t - 1.2) / 1.9);
       fox.children.forEach((m, i) => {
         m.position.lerpVectors(starts[i], homes[i], a);
@@ -274,16 +285,15 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
         m.rotation.z *= 1 - a * 0.12;
         if (a >= 1) m.rotation.set(0, 0, 0);
       });
-      const split = ease((t - 3.3) / 1.0);
-      fox.position.set(0, -split * 1.95, split * 0.9);
-      fox.scale.setScalar(1.25 - split * 0.8);
+      const settle = ease((t - 3.3) / 1.0);
+      fox.scale.setScalar(1.25 - settle * 0.2);
       fox.rotation.y = Math.sin(t * 0.7) * 0.35 * (a >= 1 ? 1 : a);
 
-      // Ω rises into the centre of the mind-sphere
-      const o = ease((t - 3.3) / 1.2);
-      omegaMat.opacity = o;
-      omega.position.set(0, -1.4 + o * 1.7, -0.5 + o * 0.8);
-      omega.scale.setScalar(0.4 + o * 0.6);
+      // Ω rises out of the core and ascends to its place above the system (the OMNISYNAPSE logo)
+      const o = ease((t - 3.3) / 1.6);
+      omegaMat.opacity = Math.min(1, o * 2);
+      omega.position.set(0, o * (LOGO_TOP.eco.y + 1.55), 0.4);
+      omega.scale.setScalar(0.4 + o * 0.73);
       omega.rotation.y = (1 - o) * Math.PI * 1.5 + Math.sin(t * 0.6) * 0.15 * o;
       omegaMat.emissiveIntensity = 0.8 + Math.max(0, Math.sin((t - 4.4) * 2.4)) * 0.5 * o;
 
@@ -292,27 +302,23 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
       wire.scale.setScalar(0.2 + b * 0.8);
       mind.rotation.y = t * 0.22;
       mind.rotation.x = t * 0.07;
-      mind.position.y = 0.3 * o;
       (nodes.material as THREE.PointsMaterial).opacity = ease((t - 3.4) / 1.2) * 0.7;
       (halo.material as THREE.SpriteMaterial).opacity = b * 0.5;
-      core.position.y = 0.3 * o;
 
       // ecosphere: lanes draw, symbols fly in from the warp and lock into orbit
-      eco.rotation.y = t * 0.06;
-      eco.scale.setScalar(portrait ? 0.62 : 1);
+      eco.scale.setScalar(1);
       shellMat.opacity = ease((t - 3.6) / 1.4) * 0.35;
       laneMats.forEach((m, k) => (m.opacity = ease((t - 3.4 - k * 0.2) / 1.0) * 0.7));
       for (const s of sats) {
         const L = LANES[s.lane];
-        const B = laneBases[s.lane];
-        const ang = s.phase + t * L.speed;
-        tmp.copy(B.u).multiplyScalar(Math.cos(ang) * L.r).addScaledVector(B.v, Math.sin(ang) * L.r);
+        const ang = s.phase + Math.max(0, t - 3.7) * L.speed;
+        ecoPoint(s.lane, ang, tmp);
         const k = ease((t - 3.7 - s.delay) / 1.3);
         s.sprite.position.lerpVectors(s.from, tmp, k);
         // depth cue: satellites behind the Ω dim and shrink
         s.sprite.getWorldPosition(world);
         const depth = THREE.MathUtils.clamp((world.z + L.r) / (2 * L.r), 0, 1);
-        const sz = (portrait ? 1.5 : 1.05) * (0.7 + depth * 0.45);
+        const sz = 1.6 * (0.7 + depth * 0.45);
         s.sprite.scale.setScalar(Math.max(0.001, sz * k));
         const op = k * (0.35 + depth * 0.65);
         (s.sprite.material as THREE.SpriteMaterial).opacity = op;
@@ -335,16 +341,15 @@ export default function OmniOpener({ onDone }: { onDone: () => void }) {
         r.scale.setScalar(0.6 + k * 3.6);
         (r.material as THREE.MeshBasicMaterial).opacity = k > 0 && k < 1 ? (1 - k) * 0.9 : 0;
         r.rotation.z = t * 0.2;
-        r.position.y = 0.3;
       });
 
       if (t > 5.0) setTitleIn(true);
-      // camera: hold, then a slow rising pull-back that reveals the full ecosphere in 3D
-      const pull = Math.max(0, t - 5.6);
-      cam.position.z = (portrait ? 13 : 10.5) + pull * 1.2;
-      cam.position.y = 0.6 + pull * 0.45;
-      cam.position.x = Math.sin(t * 0.18) * 0.8;
-      cam.lookAt(0, 0.1, 0);
+      // camera: close on the core, then rise and pull back to exactly the live ecosphere frame
+      const pull = ease((t - 4.6) / 4.2);
+      const end = ECO_CAM.pos.clone().multiplyScalar(portrait ? ECO_CAM.portraitScale : 1);
+      const z0 = portrait ? 16 : 11;
+      cam.position.set(Math.sin(t * 0.18) * 0.8 * (1 - pull), 0.4 + pull * (end.y - 0.4), z0 + pull * (end.z - z0));
+      cam.lookAt(0, pull * ECO_CAM.target.y, 0);
       renderer.render(scene, cam);
       if (freezeAt === null && t > DURATION) {
         finish();
