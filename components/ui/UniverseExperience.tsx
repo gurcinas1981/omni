@@ -175,8 +175,8 @@ export default function UniverseExperience() {
         <Link href="/" className="brand" aria-label="OMNISYNAPSE home" data-explain="brand" onClick={() => selectNode(null)}>
           <OmegaMark size={34} />
           <span className="brand-text">
-            <span className="brand-name">OMNISYNAPSE</span>
-            <span className="brand-sub">FOX Intelligence · supervisory layer</span>
+            <span className="brand-name">OMNI</span>
+            <span className="brand-sub">FOX Intelligence</span>
           </span>
         </Link>
         <nav className="top-actions" aria-label="View controls">

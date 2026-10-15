@@ -17,6 +17,7 @@ import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { OMEGA_PATH } from '@/lib/brand/omega';
+import { foxShards } from '@/lib/brand/fox';
 import { SYMBOL_ATLAS, SYMBOL_BY_ID, type OmniSymbol } from '@/lib/registry/symbols';
 import {
   CORE_RETREAT,
@@ -85,7 +86,7 @@ export const PALETTES = {
     line: '#a9bfe0',
     lineOp: 0.2,
     glyph: ['#ffffff', '#d5dce6', '#b9c4d3'] as const,
-    glyphOp: 0.26,
+    glyphOp: 0.16,
     swarmOp: 0.55,
     dot: '#cfdcf0',
     flyer: '#d3dae4',
@@ -370,6 +371,9 @@ function OmegaCore({ P }: { P: Palette }) {
           <pointsMaterial size={0.09} color={P.core.node} map={dotTex()} transparent opacity={0.8} depthWrite={false} />
         </points>
       </group>
+      <sprite scale={16}>
+        <spriteMaterial map={glowTex()} color={'#c9d6ee'} transparent opacity={0.16} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </sprite>
       <sprite scale={8.5}>
         <spriteMaterial map={glowTex()} color={P.core.glow} transparent opacity={P.additive ? 0.4 : 0.55} depthWrite={false} blending={blendFor(P)} />
       </sprite>
@@ -436,18 +440,32 @@ function Moons({ ideas }: { ideas: Idea[] }) {
   );
 }
 
-/* ───────────── category sphere: transparent dotted globe, symbol inside, dashed spoke to the Ω ───────────── */
+/* ───────────── FOX gateway: ORBIT's original four-shard fox in faceted gold ───────────── */
+function FoxEmblem({ reg }: { reg: (m: THREE.Material | null, base: number) => void }) {
+  const shards = useMemo(() => foxShards(), []);
+  const mat = useMemo(() => new THREE.MeshStandardMaterial({ color: 0xe2bd72, metalness: 0.75, roughness: 0.28, emissive: 0x6b4512, emissiveIntensity: 0.55, flatShading: true, transparent: true }), []);
+  useEffect(() => reg(mat, 1), [mat, reg]);
+  return (
+    <group scale={0.5}>
+      {shards.map((g, i) => (
+        <mesh key={i} geometry={g} material={mat} />
+      ))}
+    </group>
+  );
+}
+
+/* ───────────── category sphere — opener style: the symbol on its own thin orbit, boxed label ───────────── */
 function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }) {
   const sat = SATELLITES[index];
   const { node, lane, orbit, phase, ringed } = sat;
   const col = P.lanes[lane];
   const sym = SYMBOL_BY_ID[node.symbol];
+  const isFox = node.symbol === 'fox';
   const atlas = useTexture(SYMBOL_ATLAS.src);
   const symTex = useMemo(() => symbolTex(atlas, sym), [atlas, sym]);
-  const shellGeo = useMemo(() => fibonacciShell(420, 0.78), []);
   const root = useRef<THREE.Group>(null);
-  const shell = useRef<THREE.Points>(null);
-  const symRef = useRef<THREE.Sprite>(null);
+  const spin = useRef<THREE.Group>(null);
+  const halo = useRef<THREE.SpriteMaterial>(null);
   const label = useRef<HTMLButtonElement>(null);
   const mats = useRef<THREE.Material[]>([]);
   const hot = useRef(0);
@@ -455,16 +473,10 @@ function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }
   const dim = useRef(1);
   const lerp = useFocusLerp();
   const ring = useMemo(() => {
-    const pts = new THREE.Points(orbitLine(orbit, 320), new THREE.PointsMaterial({ size: 0.045, map: dotTex(), color: P.line, transparent: true, opacity: P.lineOp, depthWrite: false }));
-    pts.frustumCulled = false;
-    return pts;
-  }, [orbit, P]);
-  const spoke = useMemo(() => {
-    const g = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-    const l = new THREE.Line(g, new THREE.LineDashedMaterial({ color: col, dashSize: 0.22, gapSize: 0.2, transparent: true, opacity: 0.35, depthWrite: false }));
+    const l = new THREE.LineLoop(orbitLine(orbit, 240), new THREE.LineBasicMaterial({ color: 0xcfe0ff, transparent: true, opacity: 0.18, depthWrite: false }));
     l.frustumCulled = false;
     return l;
-  }, [col]);
+  }, [orbit]);
   const e = useMemo(() => new THREE.Vector3(), []);
   const p = useMemo(() => new THREE.Vector3(), []);
   const camN = useMemo(() => new THREE.Vector3(), []);
@@ -485,43 +497,42 @@ function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }
     if (other) e.multiplyScalar(1.7);
     const pos = lerp(selected ? origin : e, dt, 2.6);
     root.current?.position.copy(pos);
+    // depth cue as in the opener: satellites behind the Ω shrink and dim
+    camN.copy(camera.position).normalize();
+    const depth = THREE.MathUtils.clamp(0.5 + pos.dot(camN) / (orbit.r * 2), 0, 1);
+    const depthScale = selected || anim.blend > 0.5 ? 1 : 0.75 + depth * 0.4;
+    const depthOp = selected || anim.blend > 0.5 ? 1 : 0.4 + depth * 0.6;
     scale.current = THREE.MathUtils.damp(scale.current, selected ? FOCUS_SCALE : other ? 0.7 : 1, 2.6, dt);
     hot.current = THREE.MathUtils.damp(hot.current, s.hovered === node.id || selected ? 1 : 0, 6, dt);
     dim.current = THREE.MathUtils.damp(dim.current, other ? 0.3 : 1, 3, dt);
-    root.current?.scale.setScalar(scale.current * (1 + hot.current * 0.1));
-    if (shell.current && !s.reducedMotion) {
-      shell.current.rotation.y += dt * (selected ? 0.32 : 0.2);
-      shell.current.rotation.x = Math.sin(t * 0.3 + index) * 0.25;
+    root.current?.scale.setScalar(scale.current * depthScale * (1 + hot.current * 0.1));
+    if (spin.current && !s.reducedMotion) {
+      // the selected sphere keeps turning at the centre; the others bob gently
+      spin.current.rotation.y = isFox || selected ? spin.current.rotation.y + dt * (selected ? 0.5 : 0.35) : 0;
+      spin.current.position.y = Math.sin(t * 1.1 + index) * 0.05;
     }
-    if (symRef.current) symRef.current.position.y = Math.sin(t * 1.1 + index) * 0.04;
     mats.current.forEach((m) => {
       if (!m) return;
-      (m as THREE.Material & { opacity: number }).opacity = ((m.userData.base as number) ?? 1) * dim.current * (1 + hot.current * 0.4);
+      (m as THREE.Material & { opacity: number }).opacity = ((m.userData.base as number) ?? 1) * dim.current * depthOp;
     });
-    (ring.material as THREE.PointsMaterial).opacity = (P.lineOp + hot.current * 0.3) * (1 - anim.blend * 0.4) * (other ? 0.4 : 1);
-    // dashed spoke from the sphere to the Ω (hidden while a sphere is the subject)
-    const arr = spoke.geometry.getAttribute('position') as THREE.BufferAttribute;
-    arr.setXYZ(0, pos.x, pos.y, pos.z);
-    arr.setXYZ(1, 0, 0, 0);
-    arr.needsUpdate = true;
-    spoke.computeLineDistances();
-    (spoke.material as THREE.LineDashedMaterial).opacity = (0.26 + hot.current * 0.4) * (1 - anim.focus);
+    if (halo.current) halo.current.opacity = 0.32 * hot.current * dim.current;
+    (ring.material as THREE.LineBasicMaterial).opacity = (0.16 + hot.current * 0.3) * (1 - anim.blend * 0.5) * (other ? 0.4 : 1);
     if (label.current) {
-      camN.copy(camera.position).normalize();
-      const depth = THREE.MathUtils.clamp(0.5 + pos.dot(camN) / (orbit.r * 2), 0, 1);
-      // far-side spheres fade their labels away so the front of the ecosphere reads cleanly
-      const vis = selected || hot.current > 0.5 ? 1 : anim.blend > 0.5 ? 1 : THREE.MathUtils.smoothstep(depth, 0.4, 0.62);
+      const vis = selected || hot.current > 0.5 || anim.blend > 0.5 ? 1 : THREE.MathUtils.smoothstep(depth, 0.4, 0.62);
       label.current.style.opacity = String(vis * (other ? 0.3 : 1));
-      label.current.style.pointerEvents = vis < 0.15 ? "none" : "";
+      label.current.style.pointerEvents = vis < 0.15 ? 'none' : '';
       label.current.classList.toggle('on', hot.current > 0.5);
     }
   });
-  const reg = (m: THREE.Material | null, base: number) => {
-    if (m && !mats.current.includes(m)) {
-      m.userData.base = base;
-      mats.current.push(m);
-    }
-  };
+  const reg = useMemo(
+    () => (m: THREE.Material | null, base: number) => {
+      if (m && !mats.current.includes(m)) {
+        m.userData.base = base;
+        mats.current.push(m);
+      }
+    },
+    [],
+  );
   const handlers = {
     onPointerOver: (ev: ThreeEvent<PointerEvent>) => {
       ev.stopPropagation();
@@ -536,35 +547,35 @@ function Globe({ index, ideas, P }: { index: number; ideas: Idea[]; P: Palette }
   return (
     <>
       <primitive object={ring} />
-      <primitive object={spoke} />
       <group ref={root} name={`eco-${node.id}`}>
-        {/* soft halo */}
-        <sprite scale={2.3}>
-          <spriteMaterial ref={(m) => reg(m, P.additive ? 0.32 : 0.22)} map={glowTex()} color={col} transparent opacity={0.3} depthWrite={false} blending={blendFor(P)} />
+        {/* glow only on hover / selection */}
+        <sprite scale={2.4}>
+          <spriteMaterial ref={halo} map={glowTex()} color={col} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
         </sprite>
-        {/* transparent dotted sphere */}
-        <points ref={shell} geometry={shellGeo}>
-          <pointsMaterial ref={(m) => reg(m, P.additive ? 0.7 : 0.75)} size={0.05} map={dotTex()} color={col} transparent opacity={0.7} depthWrite={false} blending={blendFor(P)} />
-        </points>
         {ringed && (
           <mesh rotation={[Math.PI / 2.4, 0.2, 0]}>
-            <ringGeometry args={[0.98, 1.02, 120]} />
-            <meshBasicMaterial ref={(m) => reg(m, 0.5)} color={col} side={THREE.DoubleSide} transparent opacity={0.5} depthWrite={false} />
+            <ringGeometry args={[0.9, 0.93, 120]} />
+            <meshBasicMaterial ref={(m) => reg(m, 0.35)} color={col} side={THREE.DoubleSide} transparent opacity={0.35} depthWrite={false} />
           </mesh>
         )}
-        {/* the category symbol floating inside */}
-        <sprite ref={symRef} scale={0.92}>
-          <spriteMaterial ref={(m) => reg(m, 1)} map={symTex} color={col} transparent opacity={1} depthWrite={false} toneMapped={false} />
-        </sprite>
-        <mesh scale={0.82} {...handlers}>
+        <group ref={spin}>
+          {isFox ? (
+            <FoxEmblem reg={reg} />
+          ) : (
+            <sprite scale={1.3}>
+              <spriteMaterial ref={(m) => reg(m, 1)} map={symTex} color={col} transparent opacity={1} depthWrite={false} />
+            </sprite>
+          )}
+        </group>
+        <mesh scale={0.8} {...handlers}>
           <sphereGeometry args={[1, 16, 12]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
         </mesh>
         <Moons ideas={ideas} />
-        <Html position={[0, -1.08, 0]} center zIndexRange={[3, 0]}>
+        <Html position={[0, -1.02, 0]} center zIndexRange={[3, 0]}>
           <button
             ref={label}
-            className="plabel"
+            className="plabel op"
             style={{ ['--c' as string]: col }}
             onClick={() => selectNode(node.id)}
             onPointerEnter={() => hoverNode(node.id)}
@@ -591,9 +602,7 @@ function Flyer({ index, P }: { index: number; P: Palette }) {
   const f = FLYERS[index];
   const atlas = useTexture(SYMBOL_ATLAS.src);
   const symTex = useMemo(() => symbolTex(atlas, f.sym), [atlas, f.sym]);
-  const shell = useMemo(() => fibonacciShell(110, 0.36), []);
   const group = useRef<THREE.Group>(null);
-  const shellRef = useRef<THREE.Points>(null);
   const [hover, setHover] = useState(false);
   const e = useMemo(() => new THREE.Vector3(), []);
   const p = useMemo(() => new THREE.Vector3(), []);
@@ -602,14 +611,10 @@ function Flyer({ index, P }: { index: number; P: Palette }) {
     orbitPoint(f.orbit, ang, e);
     p.set(Math.cos(f.planAngle + anim.orbitT * 0.02) * f.orbit.planR, 0, Math.sin(f.planAngle + anim.orbitT * 0.02) * f.orbit.planR);
     group.current?.position.copy(e.lerp(p, anim.blend));
-    if (shellRef.current && !getState().reducedMotion) shellRef.current.rotation.y = clock.elapsedTime * 0.4;
     group.current?.scale.setScalar((hover ? 1.3 : 1) * (getState().selected ? 0.7 : 1));
   });
   return (
     <group ref={group}>
-      <points ref={shellRef} geometry={shell}>
-        <pointsMaterial size={0.035} map={dotTex()} color={P.flyer} transparent opacity={0.32} depthWrite={false} blending={blendFor(P)} />
-      </points>
       <sprite scale={0.46}>
         <spriteMaterial map={symTex} color={P.flyer} transparent opacity={0.45} depthWrite={false} toneMapped={false} />
       </sprite>
@@ -725,7 +730,7 @@ function Scene({ P }: { P: Palette }) {
   return (
     <>
       <Sky P={P} />
-      <GlyphCloud P={P} mode="ambient" count={460} rMin={20} rMax={52} speed={[0.004, 0.016]} size={[0.22, 0.5]} />
+      <GlyphCloud P={P} mode="ambient" count={180} rMin={24} rMax={56} speed={[0.004, 0.014]} size={[0.2, 0.42]} />
       <GlyphCloud P={P} mode="swarm" count={240} rMin={2.9} rMax={7.5} speed={[0.12, 0.42]} size={[0.1, 0.24]} />
       <Field P={P} />
       <OmegaCore P={P} />

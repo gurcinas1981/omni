@@ -18,5 +18,5 @@ export function OmegaMark({ size = 28, className, title = 'OMNISYNAPSE Ω' }: { 
 /** FOX ecosystem mark — official faceted emblem (same artwork as ORBIT's fox-mark.svg). */
 export function FoxMark({ size = 22, className }: { size?: number; className?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/brand/fox-mark.svg" width={size * 0.81} height={size} className={className} alt="FOX Intelligence" style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
+  return <img src="/brand/fox-original.svg" width={size * 0.81} height={size} className={className} alt="FOX Intelligence" style={{ display: 'inline-block', verticalAlign: 'middle' }} />;
 }

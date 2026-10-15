@@ -391,3 +391,10 @@ details.skill, .hier .lvl { background: rgba(9,22,48,.45); border-color: rgba(14
 .ex-body { margin: 0; font: 400 12.5px/1.5 var(--sans); color: #dfe6f0; }
 .ex-how { margin: 6px 0 0; padding-top: 6px; border-top: 1px solid rgba(143,170,214,.16); font: 400 10.5px/1.5 var(--mono); color: #9fb0c8; }
 @media (hover: none) { .explain { display: none; } }
+
+/* Opener-style sphere labels in the live ecosphere: title + subtitle, always shown */
+.plabel.op { padding: 4px 10px 5px; border-radius: 6px; background: rgba(3,9,24,.72); border-color: color-mix(in srgb, var(--c) 40%, transparent); }
+.plabel.op b { font: 700 9.5px var(--mono); letter-spacing: .14em; color: var(--c); }
+.plabel.op small { display: block; font: 400 9.5px var(--mono); letter-spacing: .06em; color: #9fb0c8; }
+@media (max-width: 760px) { .plabel.op small { display: none; } .plabel.op.on small { display: block; } }
+.brand-name { letter-spacing: .34em; }

@@ -17,8 +17,8 @@ export default async function CommandLayout({ children }: { children: React.Reac
         <Link href="/" className="brand" aria-label="Back to the cognitive universe">
           <OmegaMark size={30} />
           <span className="brand-text">
-            <span className="brand-name" style={{ fontSize: 18 }}>OMNISYNAPSE</span>
-            <span className="brand-sub">FOX Intelligence · command layer</span>
+            <span className="brand-name" style={{ fontSize: 18 }}>OMNI</span>
+            <span className="brand-sub">FOX Intelligence</span>
           </span>
         </Link>
         <SideNav />
