@@ -13,6 +13,7 @@ export type ToolId =
   | 'LAND_SEARCH'
   | 'PLANNING_RADAR'
   | 'LAND_PASSPORT'
+  | 'FOX_GIS'
   | 'OBSERVATORY';
 
 export type IntegrationStatus = 'self' | 'not_configured' | 'link_only' | 'read_only_verified';
@@ -35,6 +36,7 @@ export const FOX_TOOLS: Record<ToolId, FoxTool> = {
   LAND_SEARCH: { id: 'LAND_SEARCH', name: 'LandSearch', role: 'Land-for-sale listing search against preset filters', url: 'https://land.foxatlas.co.uk/', layer: 'Discovery', integration: 'link_only' },
   PLANNING_RADAR: { id: 'PLANNING_RADAR', name: 'Planning Radar', role: 'Policy, consultation and application monitoring', url: 'https://radar.foxintelligence.co.uk/', layer: 'Monitoring', integration: 'link_only' },
   LAND_PASSPORT: { id: 'LAND_PASSPORT', name: 'Land Passport', role: 'Persistent site identity and digital twin (Derby pilot)', url: 'https://derbypilot.foxintelligence.co.uk/', layer: 'Identity', integration: 'link_only' },
+  FOX_GIS: { id: 'FOX_GIS', name: 'FOX GIS', role: 'RustGIS spatial engine behind Land IQ, Land Search and RADAR (buffer, clip, overlay, measure)', url: 'https://gis.foxatlas.co.uk/', layer: 'Engine', integration: 'link_only' },
   OBSERVATORY: { id: 'OBSERVATORY', name: 'Observatory', role: 'Operations, performance, connections and audit', url: null, layer: 'Monitoring', integration: 'not_configured' },
 };
 
