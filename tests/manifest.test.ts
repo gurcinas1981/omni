@@ -27,5 +27,7 @@ describe('fox.ecosystem.component.v1 manifest', () => {
   it('OMNI is mapped from ORBIT site and Vercel project ids', () => {
     expect(ORBIT_SITE_TO_SYSTEM.omni).toBe('fox-omnisynapse');
     expect(VERCEL_PROJECT_TO_SYSTEM.omni).toBe('fox-omnisynapse');
+    expect(ORBIT_SITE_TO_SYSTEM.gis).toBe('fox-gis');
+    expect(VERCEL_PROJECT_TO_SYSTEM['fox-gis']).toBe('fox-gis');
   });
 });
