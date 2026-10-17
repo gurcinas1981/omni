@@ -45,6 +45,17 @@ npm test                     # vitest: engine + governance tests
 npm run typecheck && npm run build
 ```
 
+## Automated checks
+The `OMNI build and tests` GitHub Actions workflow runs on pull requests and pushes
+to `main` and the FOX engineering draft branch. It installs dependencies from
+`package-lock.json` and reports app tests, TypeScript validation, production build,
+and Python reference tests as separate checks. The test job also verifies that
+the agent bundle generator works from paths containing spaces.
+These checks use no deployment or database credentials and do not deploy.
+
+Run the additional checks locally with `node --test scripts/build-skills.test.mjs`
+and, from `agent-pack/python-runtime`, `python -m unittest discover -s tests -v`.
+
 ## Database
 Migrations in `supabase/migrations/` (already applied to `fox-omnisynapse`). Apply to a new project with the Supabase CLI: `supabase db push`.
 Add another owner: insert their `auth.users.id` into `public.owners` (role `owner`, `admin` or `viewer`).
