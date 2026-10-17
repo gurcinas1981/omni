@@ -1,0 +1,28 @@
+name: FOX Autonomous Engineering Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit connected FOX repositories (read-only)
+        env:
+          GH_TOKEN: ${{ secrets.FOX_AUDIT_TOKEN }}
+          GH_FALLBACK_TOKEN: ${{ github.token }}
+          FOX_OWNER: gurcinas1981
+        run: python fox-engineer/audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fox-engineering-audit
+          path: fox-engineer/output/
+          retention-days: 30
