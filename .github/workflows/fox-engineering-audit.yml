@@ -1,5 +1,11 @@
 name: FOX Autonomous Engineering Audit
 on:
+  push:
+    branches:
+      - feature/fox-autonomous-engineer-v1
+    paths:
+      - '.github/workflows/fox-engineering-audit.yml'
+      - 'fox-engineer/**'
   workflow_dispatch:
   schedule:
     - cron: '17 5 * * *'
