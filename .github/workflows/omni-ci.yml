@@ -1,0 +1,62 @@
+name: OMNI build and tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omni-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: App ${{ matrix.check }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [test, typecheck, build]
+        os: [ubuntu-latest]
+        include:
+          - check: build
+            os: windows-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Build-script regression test
+        if: matrix.check == 'test' || runner.os == 'Windows'
+        run: node --test scripts/build-skills.test.mjs
+      - name: Generate agent bundle
+        if: matrix.check == 'typecheck'
+        run: node scripts/build-skills.mjs
+      - run: npm run ${{ matrix.check }}
+
+  reference:
+    name: Python reference tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: agent-pack/python-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
+      - name: Audit coverage regression tests (offline)
+        working-directory: fox-engineer
+        run: python -m unittest discover -s . -p 'test_*.py' -v

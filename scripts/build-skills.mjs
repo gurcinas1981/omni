@@ -1,7 +1,8 @@
 // Compiles agent-pack skills + config into a typed JSON bundle the app can import at build time.
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-const root = new URL('..', import.meta.url).pathname;
+import { fileURLToPath } from 'node:url';
+const root = fileURLToPath(new URL('..', import.meta.url));
 const skillsDir = join(root, 'agent-pack', 'skills');
 const parseFrontmatter = (src) => {
   const m = src.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
