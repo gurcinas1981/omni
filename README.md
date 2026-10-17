@@ -51,6 +51,7 @@ to `main`. It installs dependencies from
 `package-lock.json` and reports app tests, TypeScript validation, production build,
 and Python reference tests as separate checks. The test job also verifies that
 the agent bundle generator works from paths containing spaces.
+The production build and bundle path regression also run on a Windows runner.
 These checks use no deployment or database credentials and do not deploy.
 
 Run the additional checks locally with `node --test scripts/build-skills.test.mjs`

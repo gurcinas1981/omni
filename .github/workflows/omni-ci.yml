@@ -16,13 +16,17 @@ concurrency:
 
 jobs:
   app:
-    name: App ${{ matrix.check }}
-    runs-on: ubuntu-latest
+    name: App ${{ matrix.check }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         check: [test, typecheck, build]
+        os: [ubuntu-latest]
+        include:
+          - check: build
+            os: windows-latest
     env:
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
@@ -33,7 +37,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Build-script regression test
-        if: matrix.check == 'test'
+        if: matrix.check == 'test' || runner.os == 'Windows'
         run: node --test scripts/build-skills.test.mjs
       - name: Generate agent bundle
         if: matrix.check == 'typecheck'
