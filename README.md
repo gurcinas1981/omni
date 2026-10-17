@@ -47,7 +47,7 @@ npm run typecheck && npm run build
 
 ## Automated checks
 The `OMNI build and tests` GitHub Actions workflow runs on pull requests and pushes
-to `main` and the FOX engineering draft branch. It installs dependencies from
+to `main`. It installs dependencies from
 `package-lock.json` and reports app tests, TypeScript validation, production build,
 and Python reference tests as separate checks. The test job also verifies that
 the agent bundle generator works from paths containing spaces.
