@@ -18,6 +18,12 @@ def get(path):
         with urllib.request.urlopen(req, timeout=15) as response:
             return json.load(response), None
     except urllib.error.HTTPError as e:
+        if e.code == 409:
+            try:
+                if json.load(e).get("message") == "Git Repository is empty.":
+                    return None, "EMPTY_REPOSITORY"
+            except (ValueError, AttributeError, TypeError):
+                pass
         return None, f"HTTP {e.code}"  # never persist token or API body
     except Exception as e:
         return None, type(e).__name__
@@ -31,6 +37,9 @@ def main():
             continue
         branch=info.get("default_branch","main")
         tree,tree_err=get(base+"/git/trees/"+branch+"?recursive=1")
+        empty=tree_err == "EMPTY_REPOSITORY"
+        if empty:
+            tree_err=None
         paths=[v["path"] for v in tree.get("tree",[]) if v.get("type")=="blob"] if tree else []
         workflows=[p for p in paths if p.startswith(".github/workflows/")]
         tests=[p for p in paths if p.startswith(("tests/","test/","__tests__/")) or p.endswith((".test.ts",".spec.ts",".test.js",".spec.js","_test.py"))]
@@ -38,17 +47,20 @@ def main():
         tree_truncated=bool(tree and tree.get("truncated"))
         incomplete=bool(tree_err or tree_truncated)
         risks=[]
-        if not incomplete and not workflows: risks.append("No GitHub workflow detected")
-        if not incomplete and not tests: risks.append("No conventional test files detected")
-        if not incomplete and not manifests: risks.append("No recognised root manifest detected")
-        rows.append({"repository":name,"status":"partial" if incomplete else "audited",
+        if empty: risks.append("Empty repository: no commits or files to assess")
+        if not incomplete and not empty and not workflows: risks.append("No GitHub workflow detected")
+        if not incomplete and not empty and not tests: risks.append("No conventional test files detected")
+        if not incomplete and not empty and not manifests: risks.append("No recognised root manifest detected")
+        rows.append({"repository":name,"status":"empty" if empty else ("partial" if incomplete else "audited"),
           "private":info.get("private"),"archived":info.get("archived"),
           "default_branch":branch,"updated_at":info.get("updated_at"),
           "workflows":workflows[:50],"test_file_count":len(tests),
           "manifests":manifests,"risk_indicators":risks,
           "tree_error":tree_err,"tree_truncated":tree_truncated})
-    incomplete_count=sum(r["status"] != "audited" for r in rows)
+    incomplete_count=sum(r["status"] not in ("audited", "empty") for r in rows)
+    empty_count=sum(r["status"] == "empty" for r in rows)
     result={"complete":incomplete_count == 0,"incomplete_repository_count":incomplete_count,
+            "empty_repository_count":empty_count,
             "generated_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "mode":"READ_ONLY","scope":f"{OWNER} named FOX repositories",
             "limitations":["Heuristic discovery, not proof of code quality or deployment health",
@@ -70,6 +82,6 @@ def main():
          "; ".join(r.get("risk_indicators",[])) or ("Not assessed: incomplete coverage" if r["status"] != "audited" else "None detected")]) +" |")
     lines+=["","## Boundaries",*["- "+x for x in result["limitations"]]]
     (OUTPUT/"report.md").write_text("\n".join(lines)+"\n")
-    print(f"FOX audit coverage: {len(rows)-incomplete_count}/{len(rows)} repositories complete; read-only")
+    print(f"FOX audit coverage: {len(rows)-incomplete_count}/{len(rows)} repositories complete; {empty_count} empty; read-only")
     return 1 if incomplete_count else 0
 if __name__=="__main__": raise SystemExit(main())
